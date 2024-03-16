@@ -1,10 +1,12 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
 import { useEffect, useState, useRef } from 'react'
-import { Select, Form, Slider } from 'antd';
+import { Select, Form, Slider, Radio, Input, InputNumber } from 'antd';
 import styles from '../styles/Home.module.css'
 import 'antd/dist/antd.css';
 import Checkbox from 'antd/lib/checkbox/Checkbox';
+import { useTranslation } from 'react-i18next';
+import i18n from './i18n';
 
 const { Option } = Select;
 
@@ -17,6 +19,13 @@ const BACKGROUND_COLOR = '#9dbbcc';
 const CANVAS_WIDTH = 600;
 const CANVAS_HEIGHT = 490;
 const xOffset = 0;
+
+const commonDisplayConfigs = [
+  {
+    aspectDisplay: "16:9",
+    aspectRatio: 16 / 9,
+  }
+]
 
 let headPositions = {
   normX: 0.55, // normalized value, 0-1
@@ -160,8 +169,11 @@ const drawMonitors = (
   var headTY = headPositions.ty;
   var headSY = headPositions.sy;
 
-  var monX = headX - distanceToScreen * carScale;
   const monitorInfo = getMonitor(screenSize, aspectRatio, curveRadius)
+
+  var topMonX = headX - distanceToScreen * carScale + monitorInfo.thickness;
+  var sideMonX = headX - distanceToScreen * carScale;
+
   console.log("monitorInfo", monitorInfo);
   var monTY = headTY - monitorInfo.w / 2;
   var monSY = headSY - monitorInfo.h / 2;
@@ -172,50 +184,50 @@ const drawMonitors = (
 
   // side view, center monitor front
   ctx.lineWidth = MONITOR_THICKNESS;
-  drawLine(ctx, monX, monSY, monSY + monitorInfo.h);
-  drawAngle(ctx, headX, headSY, monX, monSY, monX, monSY + monitorInfo.h, -30, 0);
+  drawLine(ctx, sideMonX, monSY, monSY + monitorInfo.h);
+  drawAngle(ctx, headX, headSY, sideMonX, monSY, sideMonX, monSY + monitorInfo.h, -30, 0);
 
 
   // top view, center monitor
   ctx.lineWidth = MONITOR_THICKNESS;
   if (curveRadius <= 0) {
-    drawLine(ctx, monX, monTY, monTY + monitorInfo.w);
+    drawLine(ctx, topMonX, monTY, monTY + monitorInfo.w);
   } else {
-    drawVerticalArc(ctx, monX, monTY, monTY + monitorInfo.w, curveRadius * carScale);
+    drawVerticalArc(ctx, topMonX, monTY, monTY + monitorInfo.w, curveRadius * carScale);
   }
-  drawAngle(ctx, headX, headTY, monX, monTY, monX, monTY + monitorInfo.w, -30, 0);
+  drawAngle(ctx, headX, headTY, topMonX, monTY, topMonX, monTY + monitorInfo.w, -30, 0);
 
   if (isTripleMonitor) {
     // top view, left monitor
     ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.translate(monX + MONITOR_THICKNESS / 2, monLeftY);
+    ctx.translate(topMonX + MONITOR_THICKNESS / 2, monLeftY);
     ctx.rotate((-tripleAngle * Math.PI) / 180);
-    ctx.translate(-monX - MONITOR_THICKNESS / 2, -monLeftY);
+    ctx.translate(-topMonX - MONITOR_THICKNESS / 2, -monLeftY);
     ctx.lineWidth = MONITOR_THICKNESS;
 
     if (curveRadius <= 0) {
-      drawLine(ctx, monX, monLeftY, monLeftY + monitorInfo.w);
+      drawLine(ctx, topMonX, monLeftY, monLeftY + monitorInfo.w);
     } else {
-      drawVerticalArc(ctx, monX, monLeftY, monLeftY + monitorInfo.w, curveRadius * carScale);
+      drawVerticalArc(ctx, topMonX, monLeftY, monLeftY + monitorInfo.w, curveRadius * carScale);
     }
 
     // top view, right monitor
     ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.translate(monX + MONITOR_THICKNESS / 2, monRightY);
+    ctx.translate(topMonX + MONITOR_THICKNESS / 2, monRightY);
     ctx.rotate(((tripleAngle) * Math.PI) / 180);
-    ctx.translate(-monX - MONITOR_THICKNESS / 2, -monRightY);
+    ctx.translate(-topMonX - MONITOR_THICKNESS / 2, -monRightY);
     ctx.lineWidth = MONITOR_THICKNESS;
 
     if (curveRadius <= 0) {
-      drawLine(ctx, monX, monRightY - monitorInfo.w, monRightY);
+      drawLine(ctx, topMonX, monRightY - monitorInfo.w, monRightY);
     } else {
-      drawVerticalArc(ctx, monX, monRightY - monitorInfo.w, monRightY, curveRadius * carScale);
+      drawVerticalArc(ctx, topMonX, monRightY - monitorInfo.w, monRightY, curveRadius * carScale);
     }
     ctx.setTransform(1, 0, 0, 1, 0, 0);
 
     const sinX = monitorInfo.w * Math.sin(tripleAngle * Math.PI / 180)
     const cosY = monitorInfo.w * Math.cos(tripleAngle * Math.PI / 180)
-    drawAngle(ctx, headX, headTY, monX + sinX, monTY - cosY, monX + sinX, monTY + monitorInfo.w + cosY, 10, 0);
+    drawAngle(ctx, headX, headTY, topMonX + sinX, monTY - cosY, topMonX + sinX, monTY + monitorInfo.w + cosY, 10, 0);
   }
 }
 
@@ -252,14 +264,28 @@ const getMonitor = (screenSize: number, aspectRatio: number, curveRadius: number
 const Home: NextPage = () => {
   const canvas = useRef<HTMLCanvasElement>(null)
 
+  const { t } = useTranslation();
+
   const [distanceToScreen, setDistanceToScreen] = useState(70);
+  const [language, setLanguage] = useState("cn");
   const [screenSize, setScreenSize] = useState(32);
   const [aspectRatio, setAspectRatio] = useState(16 / 9);
-  const [curvature, setCurvature] = useState(80)
+  const [curvature, setCurvature] = useState(0)
   const [isTripleMonitor, setIsTripleMonitor] = useState(true)
   const [tripleMonitorAngle, setTripleMonitorAngle] = useState(60);
+  const [canvasWidth, setCanvasWidth] = useState(CANVAS_WIDTH);
+  const [canvasHeight, setCanvasHeight] = useState(CANVAS_HEIGHT);
 
   useEffect(() => {
+    i18n.changeLanguage(language)
+  }, [language]);
+
+  useEffect(() => {
+    const windowWidth = window.innerWidth;
+    const canvasWidth = Math.min(windowWidth, CANVAS_WIDTH);
+    const canvasHeight = canvasWidth * CANVAS_HEIGHT / CANVAS_WIDTH;
+    setCanvasWidth(canvasWidth);
+    setCanvasHeight(canvasHeight);
   }, [])
 
   useEffect(() => {
@@ -299,25 +325,21 @@ const Home: NextPage = () => {
     <div className={styles.container}>
       <Head>
         <title>fov calculator</title>
-        <meta name="description" content="Generated by create next app" />
+        <meta name="description" content="fov calculator" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
       <main className={styles.main}>
-        <div className="main">
-          <h1>Field of view calculator</h1>
-          <p>
-            A super simple way to calculate the mathematically accurate field of
-            view (FoV) for your racing simulator, based on <em>monitor size</em> and
-            <em>viewing distance</em>.
-          </p>
+        <div className={styles.header}>
+          <Radio.Group value={language} onChange={(e) => { setLanguage(e.target.value) }}>
+            <Radio.Button value="en">English</Radio.Button>
+            <Radio.Button value="cn">中文</Radio.Button>
+          </Radio.Group>
+        </div>
 
-          <canvas id="fov-preview" ref={canvas} width={CANVAS_WIDTH} height={CANVAS_HEIGHT}></canvas>
+        <div className={styles.body}>
 
-          <p className="caption">
-            Top view: horizontal FoV; side view: vertical FoV. Thick red bar
-            represents monitor.
-          </p>
+          <canvas id="fov-preview" ref={canvas} width={canvasWidth} height={canvasHeight}></canvas>
 
           <Form
             name="basic"
@@ -325,34 +347,19 @@ const Home: NextPage = () => {
             wrapperCol={{ span: 16 }}
           >
 
-            <Form.Item label="Curvature (R)">
-              <Slider
-                value={curvature}
-                min={0}
-                max={180}
-                marks={{
-                  0: 'flat',
-                  80: '800R',
-                  100: '1000R',
-                  150: '1500R',
-                  180: '1800R',
-                }}
-                onChange={setCurvature}
-              />
-            </Form.Item>
-
-            <Form.Item label="Triple Monitor">
+            <Form.Item label={t("tripleMonitor")}>
               <Checkbox
                 value={isTripleMonitor}
+                checked={isTripleMonitor}
                 onChange={e => {
-                  console.log(e)
                   setIsTripleMonitor(e.target.checked)
                 }}
               />
             </Form.Item>
 
-            <Form.Item label="Triple Monitor Angle">
+            <Form.Item label={t("tripleMonitorAngle")}>
               <Slider
+                disabled={!isTripleMonitor}
                 value={tripleMonitorAngle}
                 min={0}
                 max={90}
@@ -366,7 +373,8 @@ const Home: NextPage = () => {
                 onChange={setTripleMonitorAngle}
               />
             </Form.Item>
-            <Form.Item label="Distance to screen (cm)">
+
+            <Form.Item label={t("distanceToScreen")}>
               <Slider
                 value={distanceToScreen}
                 min={40}
@@ -383,31 +391,27 @@ const Home: NextPage = () => {
               />
             </Form.Item>
 
-            <Form.Item label="Screen Size (inch)">
+            <Form.Item label={t("screenSize")}>
               <Slider
                 value={screenSize}
                 min={5}
-                max={100}
+                max={85}
                 marks={{
-                  5: '5',
                   15: '15',
-                  24: '24',
                   27: '27',
                   32: '32',
-                  40: '40',
-                  48: '48',
                   55: '55',
-                  60: '60',
                   65: '65',
                   75: '75',
                   85: '85',
                 }}
                 onChange={setScreenSize}
               />
+              <InputNumber value={screenSize} onChange={setScreenSize} />
             </Form.Item>
 
 
-            <Form.Item label="Aspect Ratio">
+            <Form.Item label={t("aspectRatio")}>
               <Select
                 value={aspectRatio}
                 style={{ width: 120 }}
@@ -421,7 +425,15 @@ const Home: NextPage = () => {
               </Select>
             </Form.Item>
 
-
+            <Form.Item label={t("curvature")}>
+              <Radio.Group value={curvature} onChange={(e) => setCurvature(parseInt(e.target.value))}>
+                <Radio.Button value="80">800R</Radio.Button>
+                <Radio.Button value="100">1000R</Radio.Button>
+                <Radio.Button value="150">1500R</Radio.Button>
+                <Radio.Button value="180">1800R</Radio.Button>
+                <Radio.Button value="0">{t("flat")}</Radio.Button>
+              </Radio.Group>
+            </Form.Item>
 
 
           </Form>
@@ -430,7 +442,7 @@ const Home: NextPage = () => {
       </main >
 
       <footer className={styles.footer}>
-        Made in China
+        Made in China, By <a href="https://github.com/nicholasxuu/">nicholasxuu</a>
       </footer>
     </div >
   )

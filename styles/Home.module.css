@@ -12,6 +12,31 @@
   align-items: center;
 }
 
+.header {
+  display: flex;
+  flex: 1;
+  padding: 2rem 0;
+  border-bottom: 1px solid #eaeaea;
+  justify-content: center;
+  align-items: flex-end;
+}
+
+.body {
+  display: flex;
+  flex: 1;
+  padding: 2rem 0;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.body form {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: stretch;
+  min-width: 400px;
+}
+
 .footer {
   display: flex;
   flex: 1;
@@ -25,7 +50,8 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  flex-grow: 1;
+  flex-grow: 0;
+  padding-left: 5px;
 }
 
 
