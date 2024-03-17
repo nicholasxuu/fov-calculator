@@ -2,11 +2,12 @@ import type { NextPage } from 'next'
 import Head from 'next/head'
 import { useEffect, useState, useRef } from 'react'
 import { Select, Form, Slider, Radio, Input, InputNumber } from 'antd';
-import styles from '../styles/Home.module.css'
+
 import 'antd/dist/antd.css';
 import Checkbox from 'antd/lib/checkbox/Checkbox';
 import { useTranslation } from 'react-i18next';
 import i18n from './i18n';
+import styles from '../styles/Home.module.css'
 
 const { Option } = Select;
 
@@ -28,9 +29,9 @@ const commonDisplayConfigs = [
 ]
 
 let headPositions = {
-  normX: 0.55, // normalized value, 0-1
-  normTY: 0.35,
-  normSY: 0.17,
+  normX: 0.57, // normalized value, 0-1
+  normTY: 0.67,
+  normSY: 0.22,
   x: 0,
   ty: 0,
   sy: 0,
@@ -49,8 +50,8 @@ const loadImage = async (ctx: CanvasRenderingContext2D) => {
   console.log('load images')
   ctx.globalAlpha = 0.5;
 
-  const topImage = await getImage("assets/images/bentley-top.svg")
-  const sideImage = await getImage("assets/images/bentley-side.svg")
+  const topImage = await getImage("assets/images/brz_top.jpg")
+  const sideImage = await getImage("assets/images/brz_side.jpg")
   ctx.drawImage(topImage, 0, 0);
   ctx.drawImage(sideImage, 0, topImage.height + 10);
 
@@ -273,19 +274,12 @@ const Home: NextPage = () => {
   const [curvature, setCurvature] = useState(0)
   const [isTripleMonitor, setIsTripleMonitor] = useState(true)
   const [tripleMonitorAngle, setTripleMonitorAngle] = useState(60);
-  const [canvasWidth, setCanvasWidth] = useState(CANVAS_WIDTH);
-  const [canvasHeight, setCanvasHeight] = useState(CANVAS_HEIGHT);
 
   useEffect(() => {
     i18n.changeLanguage(language)
   }, [language]);
 
   useEffect(() => {
-    const windowWidth = window.innerWidth;
-    const canvasWidth = Math.min(windowWidth, CANVAS_WIDTH);
-    const canvasHeight = canvasWidth * CANVAS_HEIGHT / CANVAS_WIDTH;
-    setCanvasWidth(canvasWidth);
-    setCanvasHeight(canvasHeight);
   }, [])
 
   useEffect(() => {
@@ -338,10 +332,13 @@ const Home: NextPage = () => {
         </div>
 
         <div className={styles.body}>
+          <div className={styles.display}>
+            <canvas id="fov-preview" ref={canvas} width={CANVAS_WIDTH} height={CANVAS_HEIGHT}></canvas>
+          </div>
 
-          <canvas id="fov-preview" ref={canvas} width={canvasWidth} height={canvasHeight}></canvas>
 
           <Form
+            className={styles.mainform}
             name="basic"
             labelCol={{ span: 8 }}
             wrapperCol={{ span: 16 }}
@@ -426,7 +423,7 @@ const Home: NextPage = () => {
             </Form.Item>
 
             <Form.Item label={t("curvature")}>
-              <Radio.Group value={curvature} onChange={(e) => setCurvature(parseInt(e.target.value))}>
+              <Radio.Group value={`${curvature}`} onChange={(e) => setCurvature(parseInt(e.target.value))}>
                 <Radio.Button value="80">800R</Radio.Button>
                 <Radio.Button value="100">1000R</Radio.Button>
                 <Radio.Button value="150">1500R</Radio.Button>

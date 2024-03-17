@@ -29,7 +29,11 @@
   flex-wrap: wrap;
 }
 
-.body form {
+.display {
+  display: block;
+}
+
+.form {
   display: flex;
   flex-direction: column;
   justify-content: center;
