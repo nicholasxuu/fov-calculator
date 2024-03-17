@@ -5,6 +5,7 @@ const nextConfig = {
   output: "export",
   basePath: "/fov-calculator",
   assetPrefix: "/fov-calculator",
+  distDir: "dist",
 };
 
 module.exports = nextConfig;
