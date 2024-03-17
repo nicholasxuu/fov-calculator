@@ -12,4 +12,4 @@ First, run the development server:
 pnpm run dev
 ```
 
-Open [http://localhost:3000/fovcalc](http://localhost:3000/fovcalc) with your browser to see the result.
+Open [http://localhost:3000/fov-calculator](http://localhost:3000/fov-calculator) with your browser to see the result.

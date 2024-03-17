@@ -33,7 +33,7 @@
   display: block;
 }
 
-.form {
+.mainform {
   display: flex;
   flex-direction: column;
   justify-content: center;
