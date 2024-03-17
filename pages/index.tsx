@@ -50,8 +50,8 @@ const loadImage = async (ctx: CanvasRenderingContext2D) => {
   console.log('load images')
   ctx.globalAlpha = 0.5;
 
-  const topImage = await getImage("assets/images/brz_top.jpg")
-  const sideImage = await getImage("assets/images/brz_side.jpg")
+  const topImage = await getImage("fovcalc/assets/images/brz_top.jpg")
+  const sideImage = await getImage("fovcalc/assets/images/brz_side.jpg")
   ctx.drawImage(topImage, 0, 0);
   ctx.drawImage(sideImage, 0, topImage.height + 10);
 
