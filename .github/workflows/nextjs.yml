@@ -34,7 +34,7 @@ jobs:
       - name: Install Packages
         uses: pnpm/action-setup@v2
         with:
-          version: 8
+          version: 7
           run_install: true
       - name: Build with Next.js
         run: pnpm run build
