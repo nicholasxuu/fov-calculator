@@ -50,8 +50,9 @@ const loadImage = async (ctx: CanvasRenderingContext2D) => {
   console.log('load images')
   ctx.globalAlpha = 0.5;
 
-  const topImage = await getImage("assets/images/brz_top.jpg")
-  const sideImage = await getImage("assets/images/brz_side.jpg")
+  const currPath = `${window.location.protocol}//${window.location.hostname}:${window.location.port}/${window.location.pathname}`;
+  const topImage = await getImage(`${currPath}/assets/images/brz_top.jpg`)
+  const sideImage = await getImage(`${currPath}/assets/images/brz_side.jpg`)
   ctx.drawImage(topImage, 0, 0);
   ctx.drawImage(sideImage, 0, topImage.height + 10);
 
