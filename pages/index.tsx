@@ -50,8 +50,8 @@ const loadImage = async (ctx: CanvasRenderingContext2D) => {
   console.log('load images')
   ctx.globalAlpha = 0.5;
 
-  const topImage = await getImage("assets/images/brz_top.jpg")
-  const sideImage = await getImage("assets/images/brz_side.jpg")
+  const topImage = await getImage("fov-calculator/assets/images/brz_top.jpg")
+  const sideImage = await getImage("fov-calculator/assets/images/brz_side.jpg")
   ctx.drawImage(topImage, 0, 0);
   ctx.drawImage(sideImage, 0, topImage.height + 10);
 
@@ -239,7 +239,7 @@ const getMonitor = (screenSize: number, aspectRatio: number, curveRadius: number
   const height = carScale * realHeight
 
   const mon = {
-    thickness: MONITOR_THICKNESS,
+    thickness: 0,
     h: 0,
     w: 0,
     curveAngle: 0,
