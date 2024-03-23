@@ -127,6 +127,19 @@
   font: inherit;
 }
 
+.gameFovData {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto;
+  padding: 0.5em;
+  border: 1px solid #eaeaea;
+  border-radius: 0.5em;
+  background-color: #f9f9f9;
+  box-shadow: 0 0 1em rgba(0, 0, 0, 0.1);
+}
+
 .slider {
   margin-top: 0.1em;
   height: 1.3em;

@@ -91,13 +91,6 @@ const drawVerticalArc = (
   toY: number,
   radius: number,
 ) => {
-  // ctx.beginPath();
-  // ctx.arc(x, fromY, 1, -1, 1, false);
-  // ctx.stroke();
-  // ctx.beginPath();
-  // ctx.arc(x, toY, 1, -1, 1, false);
-  // ctx.stroke();
-
   ctx.beginPath();
   const yLen = (toY - fromY) / 2;
   const angle = Math.asin(yLen / radius);
@@ -131,6 +124,7 @@ const drawAngle = (
   toY: number,
   textOffsetX: number,
   textOffsetY: number,
+  angleNum: number = 0,
 ) => {
   ctx.lineWidth = 1;
   ctx.beginPath();
@@ -144,11 +138,7 @@ const drawAngle = (
   ctx.stroke();
 
   if (fromX === toX) {
-    const yDiff = Math.abs(fromY - toY)
-    const radius = Math.sqrt((fromX - centerX) ** 2 + (fromY - centerY) ** 2)
-    const angle = Math.abs(Math.asin(yDiff / 2 / radius));
-    const angleNum = Math.round(angle / Math.PI * 180 * 2);
-    console.log(angleNum)
+
     const textSize = 10;
     ctx.fillText(`${angleNum}\u00b0`, centerX + textOffsetX, centerY + textOffsetY + textSize / 2)
   }
@@ -156,38 +146,35 @@ const drawAngle = (
 
 const drawMonitors = (
   ctx: CanvasRenderingContext2D,
-  distanceToScreen: number,
-  screenSize: number, // inch
-  aspectRatio: number,
   curveRadius: number, // cm
-  tripleMonitorAngle: number,
   isTripleMonitor: boolean,
+  monitorInfo: any,
+  displayPos: any,
+  verticalAngleNum: number,
+  horizontalSingleAngleNum: number,
+  horizontalTripleAngleNum: number,
 ) => {
   console.log("draw monitors");
   ctx.globalAlpha = 0.5;
   ctx.strokeStyle = MONITOR_COLOR;
 
-  var headX = headPositions.x + xOffset;
-  var headTY = headPositions.ty;
-  var headSY = headPositions.sy;
-
-  const monitorInfo = getMonitor(screenSize, aspectRatio, curveRadius)
-
-  var topMonX = headX - distanceToScreen * carScale + monitorInfo.thickness;
-  var sideMonX = headX - distanceToScreen * carScale;
-
-  console.log("monitorInfo", monitorInfo);
-  var monTY = headTY - monitorInfo.w / 2;
-  var monSY = headSY - monitorInfo.h / 2;
-  var tripleAngle = tripleMonitorAngle;
-
-  var monLeftY = headTY + monitorInfo.w / 2;
-  var monRightY = headTY - monitorInfo.w / 2;
+  const {
+    headX,
+    headTY,
+    headSY,
+    topMonX,
+    sideMonX,
+    monTY,
+    monSY,
+    monLeftY,
+    monRightY,
+    tripleAngle,
+  } = displayPos;
 
   // side view, center monitor front
   ctx.lineWidth = MONITOR_THICKNESS;
   drawLine(ctx, sideMonX, monSY, monSY + monitorInfo.h);
-  drawAngle(ctx, headX, headSY, sideMonX, monSY, sideMonX, monSY + monitorInfo.h, -30, 0);
+  drawAngle(ctx, headX, headSY, sideMonX, monSY, sideMonX, monSY + monitorInfo.h, -30, 0, verticalAngleNum);
 
 
   // top view, center monitor
@@ -197,7 +184,7 @@ const drawMonitors = (
   } else {
     drawVerticalArc(ctx, topMonX, monTY, monTY + monitorInfo.w, curveRadius * carScale);
   }
-  drawAngle(ctx, headX, headTY, topMonX, monTY, topMonX, monTY + monitorInfo.w, -30, 0);
+  drawAngle(ctx, headX, headTY, topMonX, monTY, topMonX, monTY + monitorInfo.w, -30, 0, horizontalSingleAngleNum);
 
   if (isTripleMonitor) {
     // top view, left monitor
@@ -229,7 +216,7 @@ const drawMonitors = (
 
     const sinX = monitorInfo.w * Math.sin(tripleAngle * Math.PI / 180)
     const cosY = monitorInfo.w * Math.cos(tripleAngle * Math.PI / 180)
-    drawAngle(ctx, headX, headTY, topMonX + sinX, monTY - cosY, topMonX + sinX, monTY + monitorInfo.w + cosY, 10, 0);
+    drawAngle(ctx, headX, headTY, topMonX + sinX, monTY - cosY, topMonX + sinX, monTY + monitorInfo.w + cosY, 10, 0, horizontalTripleAngleNum);
   }
 }
 
@@ -262,6 +249,62 @@ const getMonitor = (screenSize: number, aspectRatio: number, curveRadius: number
   return mon
 }
 
+const calcAngleNum = (
+  centerX: number,
+  centerY: number,
+  fromX: number,
+  fromY: number,
+  toX: number,
+  toY: number
+) => {
+  if (fromX !== toX) {
+    // won't calculate
+    return -1
+  }
+  const yDiff = Math.abs(fromY - toY)
+  const radius = Math.sqrt((fromX - centerX) ** 2 + (fromY - centerY) ** 2)
+  const angle = Math.abs(Math.asin(yDiff / 2 / radius));
+  const angleNum = Math.round(angle / Math.PI * 180 * 2);
+
+  if (centerX < fromX) {
+    return 360 - angleNum;
+  }
+  return angleNum;
+}
+
+const calculateDisplayXYPos = (
+  distanceToScreen: number,
+  monitorInfo: any,
+  tripleMonitorAngle: number,
+) => {
+  var headX = headPositions.x + xOffset;
+  var headTY = headPositions.ty;
+  var headSY = headPositions.sy;
+
+  var topMonX = headX - distanceToScreen * carScale + monitorInfo.thickness;
+  var sideMonX = headX - distanceToScreen * carScale;
+
+  var monTY = headTY - monitorInfo.w / 2;
+  var monSY = headSY - monitorInfo.h / 2;
+  var tripleAngle = tripleMonitorAngle;
+
+  var monLeftY = headTY + monitorInfo.w / 2;
+  var monRightY = headTY - monitorInfo.w / 2;
+
+  return {
+    headX,
+    headTY,
+    headSY,
+    topMonX,
+    sideMonX,
+    monTY,
+    monSY,
+    monLeftY,
+    monRightY,
+    tripleAngle,
+  }
+}
+
 
 const Home: NextPage = () => {
   const canvas = useRef<HTMLCanvasElement>(null)
@@ -276,6 +319,17 @@ const Home: NextPage = () => {
   const [isTripleMonitor, setIsTripleMonitor] = useState(true)
   const [tripleMonitorAngle, setTripleMonitorAngle] = useState(60);
 
+  const [gameFovs, setGameFovs] = useState({
+    vFov: 0,
+    hFov: 0,
+    richardBurnsRally: "",
+    f120162018: "",
+    f120192020: "",
+    f12021: "",
+    dirtrally: 0,
+    gtr2: 0,
+  })
+
   useEffect(() => {
     i18n.changeLanguage(language)
   }, [language]);
@@ -284,6 +338,8 @@ const Home: NextPage = () => {
   }, [])
 
   useEffect(() => {
+
+
     const drawCanvas = async () => {
       const ctx = canvas.current?.getContext("2d");
       if (!ctx) {
@@ -293,16 +349,72 @@ const Home: NextPage = () => {
 
       await loadImage(ctx)
       drawHeads(ctx)
+
+
+      const monitorInfo = getMonitor(screenSize, aspectRatio, curvature)
+      const displayPos = calculateDisplayXYPos(distanceToScreen, monitorInfo, tripleMonitorAngle);
+      const verticalAngleNum = calcAngleNum(
+        headPositions.x + xOffset,
+        headPositions.sy,
+        displayPos.sideMonX,
+        displayPos.monSY,
+        displayPos.sideMonX,
+        displayPos.monSY + monitorInfo.h
+      )
+      const horizontalSingleAngleNum = calcAngleNum(
+        headPositions.x + xOffset,
+        headPositions.ty,
+        displayPos.topMonX,
+        displayPos.monTY,
+        displayPos.topMonX,
+        displayPos.monTY + monitorInfo.w
+      )
+      let horizontalTripleAngleNum = 0;
+      if (isTripleMonitor) {
+        const tripleSinX = monitorInfo.w * Math.sin(tripleMonitorAngle * Math.PI / 180)
+        const tripleCosY = monitorInfo.w * Math.cos(tripleMonitorAngle * Math.PI / 180)
+        horizontalTripleAngleNum = calcAngleNum(
+          headPositions.x + xOffset,
+          headPositions.ty,
+          displayPos.topMonX + tripleSinX,
+          displayPos.monTY - tripleCosY,
+          displayPos.topMonX + tripleSinX,
+          displayPos.monTY + monitorInfo.w + tripleCosY,
+        )
+      } else {
+        horizontalTripleAngleNum = horizontalSingleAngleNum;
+      }
+
+
       drawMonitors(
         ctx,
-        distanceToScreen,
-        screenSize,
-        aspectRatio,
         curvature,
-        tripleMonitorAngle,
         isTripleMonitor,
+        monitorInfo,
+        displayPos,
+        verticalAngleNum,
+        horizontalSingleAngleNum,
+        horizontalTripleAngleNum,
       )
+
+      // horizontalTripleAngleNum from angle number to radians
+      const hFovRad = (verticalAngleNum / 180 * Math.PI).toFixed(4)
+      const f120162018 = (Math.min(Math.max((horizontalTripleAngleNum - 77) / 2 * 0.05, -1), 1)).toFixed(2);
+      const f120192020 = (Math.min(Math.max((horizontalTripleAngleNum - 77) / 2 * 0.1, -10), 10)).toFixed(1);
+      const f12021 = (Math.min(Math.max((horizontalTripleAngleNum - 77) / 2 * 1, -20), 20)).toFixed(0);
+      setGameFovs({
+        vFov: verticalAngleNum,
+        hFov: horizontalTripleAngleNum,
+        richardBurnsRally: hFovRad,
+        f120162018: f120162018,
+        f120192020: f120192020,
+        f12021: f12021,
+        dirtrally: 0,
+        gtr2: 0,
+      })
     }
+
+
     drawCanvas();
 
   }, [
@@ -335,6 +447,16 @@ const Home: NextPage = () => {
         <div className={styles.body}>
           <div className={styles.display}>
             <canvas id="fov-preview" ref={canvas} width={CANVAS_WIDTH} height={CANVAS_HEIGHT}></canvas>
+            <div className={styles.gameFovData}>
+              {t("verticalFov")}: {gameFovs.vFov}°<br />
+              {t("horizontalFov")}: {gameFovs.hFov}°<br />
+              {t("richardburnsrally")}: {gameFovs.richardBurnsRally} rad<br />
+              {t("f120162018")}: {gameFovs.f120162018}<br />
+              {t("f120192020")}: {gameFovs.f120192020}<br />
+              {t("f12021")}: {gameFovs.f12021}<br />
+              {/* {t("dirtrally")}: {gameFovs.dirtrally}<br />
+              {t("gtr2")}: {gameFovs.gtr2}<br /> */}
+            </div>
           </div>
 
 
@@ -346,13 +468,10 @@ const Home: NextPage = () => {
           >
 
             <Form.Item label={t("tripleMonitor")}>
-              <Checkbox
-                value={isTripleMonitor}
-                checked={isTripleMonitor}
-                onChange={e => {
-                  setIsTripleMonitor(e.target.checked)
-                }}
-              />
+              <Radio.Group value={isTripleMonitor} onChange={(e) => { setIsTripleMonitor(e.target.value) }}>
+                <Radio.Button value={false}>{t("singleMonitor")}</Radio.Button>
+                <Radio.Button value={true}>{t("tripleMonitor")}</Radio.Button>
+              </Radio.Group>
             </Form.Item>
 
             <Form.Item label={t("tripleMonitorAngle")}>
