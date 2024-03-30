@@ -1,4 +1,10 @@
-# Display Fov Calcuator
+# Display Field of View Calcuator
+
+<img width="500" alt="demo" src="https://github.com/nicholasxuu/fov-calculator/assets/676478/21bcfe49-8c74-463a-a11d-4bb85a419893">
+
+Help you visually see the fov and room needed for your single monitor or triple monitor configuration.
+
+## Reference
 
 Inspired by [AndyF's fovcalc project](https://andyf.me/fovcalc.html).
 
