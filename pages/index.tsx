@@ -91,6 +91,9 @@ const drawVerticalArc = (
   toY: number,
   radius: number,
 ) => {
+  ctx.globalAlpha = 0.7;
+  ctx.strokeStyle = MONITOR_COLOR;
+
   ctx.beginPath();
   const yLen = (toY - fromY) / 2;
   const angle = Math.asin(yLen / radius);
@@ -108,6 +111,9 @@ const drawLine = (
   fromY: number,
   toY: number,
 ) => {
+  ctx.globalAlpha = 0.7;
+  ctx.strokeStyle = MONITOR_COLOR;
+
   ctx.beginPath();
   ctx.moveTo(x, fromY);
   ctx.lineTo(x, toY);
@@ -126,6 +132,9 @@ const drawAngle = (
   textOffsetY: number,
   angleNum: number = 0,
 ) => {
+  ctx.globalAlpha = 1;
+  ctx.strokeStyle = MONITOR_COLOR;
+
   ctx.lineWidth = 1;
   ctx.beginPath();
   ctx.moveTo(centerX, centerY);
@@ -138,10 +147,48 @@ const drawAngle = (
   ctx.stroke();
 
   if (fromX === toX) {
-
+    ctx.globalAlpha = 1;
     const textSize = 10;
     ctx.fillText(`${angleNum}\u00b0`, centerX + textOffsetX, centerY + textOffsetY + textSize / 2)
   }
+}
+
+const drawWidth = (
+  ctx: CanvasRenderingContext2D,
+  totalWidth: number,
+
+  centerY: number,
+  toX: number,
+) => {
+  ctx.globalAlpha = 0.7;
+  ctx.strokeStyle = MONITOR_COLOR;
+
+
+
+  ctx.lineWidth = 1;
+
+  ctx.setLineDash([5, 5]);
+  ctx.beginPath();
+  ctx.moveTo(toX, centerY - totalWidth / 2);
+  ctx.lineTo(toX, centerY + totalWidth / 2);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.beginPath();
+  ctx.moveTo(toX - 50, centerY - totalWidth / 2);
+  ctx.lineTo(toX + 50, centerY - totalWidth / 2);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(toX - 50, centerY + totalWidth / 2);
+  ctx.lineTo(toX + 50, centerY + totalWidth / 2);
+  ctx.stroke();
+
+
+
+  ctx.globalAlpha = 1;
+  const textSize = 10;
+  ctx.fillText(`${(totalWidth / carScale + 2).toFixed(1)} cm`, toX, centerY - totalWidth / 2 - textSize / 2)
 }
 
 const drawMonitors = (
@@ -153,6 +200,7 @@ const drawMonitors = (
   verticalAngleNum: number,
   horizontalSingleAngleNum: number,
   horizontalTripleAngleNum: number,
+  totalWidth: number,
 ) => {
   console.log("draw monitors");
   ctx.globalAlpha = 0.5;
@@ -175,7 +223,6 @@ const drawMonitors = (
   ctx.lineWidth = MONITOR_THICKNESS;
   drawLine(ctx, sideMonX, monSY, monSY + monitorInfo.h);
   drawAngle(ctx, headX, headSY, sideMonX, monSY, sideMonX, monSY + monitorInfo.h, -30, 0, verticalAngleNum);
-
 
   // top view, center monitor
   ctx.lineWidth = MONITOR_THICKNESS;
@@ -217,7 +264,11 @@ const drawMonitors = (
     const sinX = monitorInfo.w * Math.sin(tripleAngle * Math.PI / 180)
     const cosY = monitorInfo.w * Math.cos(tripleAngle * Math.PI / 180)
     drawAngle(ctx, headX, headTY, topMonX + sinX, monTY - cosY, topMonX + sinX, monTY + monitorInfo.w + cosY, 10, 0, horizontalTripleAngleNum);
+
+    drawWidth(ctx, totalWidth, headTY, topMonX + sinX);
   }
+
+
 }
 
 const getMonitor = (screenSize: number, aspectRatio: number, curveRadius: number): any => {
@@ -338,8 +389,6 @@ const Home: NextPage = () => {
   }, [])
 
   useEffect(() => {
-
-
     const drawCanvas = async () => {
       const ctx = canvas.current?.getContext("2d");
       if (!ctx) {
@@ -370,6 +419,7 @@ const Home: NextPage = () => {
         displayPos.monTY + monitorInfo.w
       )
       let horizontalTripleAngleNum = 0;
+      let totalWidth = monitorInfo.w;
       if (isTripleMonitor) {
         const tripleSinX = monitorInfo.w * Math.sin(tripleMonitorAngle * Math.PI / 180)
         const tripleCosY = monitorInfo.w * Math.cos(tripleMonitorAngle * Math.PI / 180)
@@ -381,6 +431,7 @@ const Home: NextPage = () => {
           displayPos.topMonX + tripleSinX,
           displayPos.monTY + monitorInfo.w + tripleCosY,
         )
+        totalWidth = monitorInfo.w + 2 * monitorInfo.w * Math.cos(tripleMonitorAngle * Math.PI / 180)
       } else {
         horizontalTripleAngleNum = horizontalSingleAngleNum;
       }
@@ -395,6 +446,7 @@ const Home: NextPage = () => {
         verticalAngleNum,
         horizontalSingleAngleNum,
         horizontalTripleAngleNum,
+        totalWidth,
       )
 
       // horizontalTripleAngleNum from angle number to radians
@@ -414,7 +466,6 @@ const Home: NextPage = () => {
       })
     }
 
-
     drawCanvas();
 
   }, [
@@ -425,8 +476,6 @@ const Home: NextPage = () => {
     isTripleMonitor,
     tripleMonitorAngle,
   ])
-
-
 
   return (
     <div className={styles.container}>
