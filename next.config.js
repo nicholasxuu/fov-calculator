@@ -3,8 +3,8 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   output: "export",
-  basePath: "/fov-calculator",
-  assetPrefix: "/fov-calculator",
+  // basePath: "/fov-calculator",
+  // assetPrefix: "/fov-calculator",
 };
 
 module.exports = nextConfig;
