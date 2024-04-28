@@ -26,7 +26,8 @@
 
 .display {
   display: block;
-  min-width: 600px;
+  display: flex;
+  justify-content: center;
 }
 
 .mainform {
@@ -34,7 +35,6 @@
   flex-direction: column;
   justify-content: center;
   align-items: stretch;
-  min-width: 600px;
 }
 
 .footer {
