@@ -6,6 +6,7 @@ import { Selector, Form, Slider, Input } from 'antd-mobile';
 import { useTranslation } from 'react-i18next';
 import i18n from '../src/i18n';
 import styles from '../styles/Home.module.css'
+import { SliderValue } from 'antd-mobile/es/components/slider';
 
 
 const MONITOR_COLOR = '#f00';
@@ -531,7 +532,7 @@ const Home: NextPage = () => {
                   ]
                 }
                 value={[isTripleMonitor ? "1" : ""]}
-                onChange={(e: [string, any]) => { setIsTripleMonitor(e[0] === "1") }}
+                onChange={(e: ("" | "0" | "1")[]) => { setIsTripleMonitor(e[0] === "1") }}
               />
             </Form.Item>
 
@@ -542,10 +543,7 @@ const Home: NextPage = () => {
                 min={0}
                 max={90}
                 popover
-                onChange={(e) => {
-                  // console.log("!!!!", e);
-                  setTripleMonitorAngle(e)
-                }}
+                onChange={(e) => setTripleMonitorAngle(e as number)}
               />
             </Form.Item>
 
@@ -556,10 +554,7 @@ const Home: NextPage = () => {
                 min={40}
                 max={200}
                 popover
-                onChange={(e) => {
-                  // console.log("!!!!", e);
-                  setDistanceToScreen(e)
-                }}
+                onChange={(e) => setDistanceToScreen(e as number)}
               />
             </Form.Item>
             <Form.Item label={`${t("screenSize")}: ${screenSize} ${t("inch")}`}>
@@ -569,7 +564,7 @@ const Home: NextPage = () => {
                 min={5}
                 max={85}
                 popover
-                onChange={setScreenSize}
+                onChange={(e) => setScreenSize(e as number)}
               />
             </Form.Item>
 
@@ -592,11 +587,11 @@ const Home: NextPage = () => {
                     { value: "9:32", label: "9:32" },
                   ]
                 }
-                value={`${aspectRatioA}:${aspectRatioB}`}
-                onChange={(e: string) => {
-                  const values = e.split(":")
-                  setAspectRatioA(parseInt(values[0]))
-                  setAspectRatioB(parseInt(values[1]))
+                value={[`${aspectRatioA}:${aspectRatioB}`]}
+                onChange={(e: `${number}:${number}`[]) => {
+                  const values = e[0].split(":");
+                  setAspectRatioA(parseInt(values[0]));
+                  setAspectRatioB(parseInt(values[1]));
                 }}
               />
 
@@ -609,16 +604,16 @@ const Home: NextPage = () => {
                 columns={3}
                 options={
                   [
-                    { value: "80", label: "800R" },
-                    { value: "100", label: "1000R" },
-                    { value: "150", label: "1500R" },
-                    { value: "180", label: "1800R" },
-                    { value: "300", label: "3000R" },
+                    { value: 80, label: "800R" },
+                    { value: 100, label: "1000R" },
+                    { value: 150, label: "1500R" },
+                    { value: 180, label: "1800R" },
+                    { value: 300, label: "3000R" },
                     { value: 0, label: t("flat") },
                   ]
                 }
-                value={`${curvature}`}
-                onChange={(e) => setCurvature(parseInt(e))}
+                value={[curvature]}
+                onChange={(e: number[]) => setCurvature(e[0])}
               />
             </Form.Item>
 
