@@ -30,6 +30,8 @@
   justify-content: center;
   flex-wrap: wrap;
   align-items: center;
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 
 .mainform {
