@@ -521,7 +521,7 @@ const Home: NextPage = () => {
             className={styles.mainform}
             name="basic"
           >
-            <Form.Item label={t("tripleMonitor")}>
+            <Form.Item>
               <Selector
                 columns={2}
                 options={
@@ -530,17 +530,18 @@ const Home: NextPage = () => {
                     { value: "1", label: t("tripleMonitor") },
                   ]
                 }
-                defaultValue={[isTripleMonitor ? "1" : ""]}
-                onChange={(e) => { setIsTripleMonitor(e[0] === "1") }}
+                value={[isTripleMonitor ? "1" : ""]}
+                onChange={(e: [string, any]) => { setIsTripleMonitor(e[0] === "1") }}
               />
             </Form.Item>
 
-            <Form.Item label={t("tripleMonitorAngle")}>
+            <Form.Item label={`${t("tripleMonitorAngle")}: ${tripleMonitorAngle}`}>
               <Slider
                 disabled={!isTripleMonitor}
                 value={tripleMonitorAngle}
                 min={0}
                 max={90}
+                popover
                 onChange={(e) => {
                   // console.log("!!!!", e);
                   setTripleMonitorAngle(e)
@@ -548,74 +549,78 @@ const Home: NextPage = () => {
               />
             </Form.Item>
 
-            <Form.Item label={t("distanceToScreen")}>
-              <Input type="number" value={`${distanceToScreen}`} onChange={(e) => setDistanceToScreen(parseInt(e))} />cm
-              <br />
+            <Form.Item label={`${t("distanceToScreen")}: ${distanceToScreen} ${t("cm")}`}>
+              {/* <Input type="number" value={`${distanceToScreen}`} onChange={(e) => setDistanceToScreen(parseInt(e))} /> */}
               <Slider
                 value={distanceToScreen}
                 min={40}
                 max={200}
+                popover
                 onChange={(e) => {
                   // console.log("!!!!", e);
                   setDistanceToScreen(e)
                 }}
               />
             </Form.Item>
-            {/* 
-            <Form.Item label={t("screenSize")}>
-              <Input type="number" value={screenSize} onChange={setScreenSize} />{`${t("inch")}`}
-              <br />
+            <Form.Item label={`${t("screenSize")}: ${screenSize} ${t("inch")}`}>
+              {/* <Input type="number" value={screenSize} onChange={setScreenSize} /> */}
               <Slider
                 value={screenSize}
                 min={5}
                 max={85}
-                marks={{
-                  15: '15',
-                  27: '27',
-                  32: '32',
-                  55: '55',
-                  65: '65',
-                  75: '75',
-                  85: '85',
-                }}
+                popover
                 onChange={setScreenSize}
               />
             </Form.Item>
 
 
-            <Form.Item label={t("aspectRatio")}>
-              <Input type="number" value={aspectRatioA} onChange={setAspectRatioA} /> / <Input type="number" value={aspectRatioB} onChange={setAspectRatioB} />
-              <br />
-              <Select
+            <Form.Item label={`${t("aspectRatio")}: ${aspectRatioA} : ${aspectRatioB}`}>
+              {/* <Input type="number" value={aspectRatioA} onChange={setAspectRatioA} /> / <Input type="number" value={aspectRatioB} onChange={setAspectRatioB} /> */}
+              <Selector
+                columns={5}
+                options={
+                  [
+                    { value: "16:9", label: "16:9" },
+                    { value: "16:10", label: "16:10" },
+                    { value: "4:3", label: "4:3" },
+                    { value: "21:9", label: "21:9" },
+                    { value: "32:9", label: "32:9" },
+                    { value: "9:16", label: "9:16" },
+                    { value: "10:16", label: "10:16" },
+                    { value: "3:4", label: "3:4" },
+                    { value: "9:21", label: "9:21" },
+                    { value: "9:32", label: "9:32" },
+                  ]
+                }
                 value={`${aspectRatioA}:${aspectRatioB}`}
-                style={{ width: 120 }}
                 onChange={(e: string) => {
                   const values = e.split(":")
                   setAspectRatioA(parseInt(values[0]))
                   setAspectRatioB(parseInt(values[1]))
                 }}
-              >
-                <Option value={"16:9"}>16:9</Option>
-                <Option value={"16:10"}>16:10</Option>
-                <Option value={"4:3"}>4:3</Option>
-                <Option value={"21:9"}>21:9</Option>
-                <Option value={"32:9"}>32:9</Option>
-              </Select>
+              />
 
             </Form.Item>
 
-            <Form.Item label={t("curvature")}>
-              <Input type="number" value={`${curvature === 0 ? t("flat") : curvature * 10}`} onChange={(e) => setCurvature(parseInt(e) / 10)} />R
-              <br />
-              <Radio.Group value={`${curvature}`} onChange={(e) => setCurvature(parseInt(e.target.value))}>
-                <Radio.Button value="80">800R</Radio.Button>
-                <Radio.Button value="100">1000R</Radio.Button>
-                <Radio.Button value="150">1500R</Radio.Button>
-                <Radio.Button value="180">1800R</Radio.Button>
-                <Radio.Button value="300">3000R</Radio.Button>
-                <Radio.Button value="0">{t("flat")}</Radio.Button>
-              </Radio.Group>
-            </Form.Item> */}
+
+            <Form.Item label={`${t("curvature")}: ${curvature > 0 ? `${curvature}0R` : t("flat")}`}>
+              {/* <Input type="number" value={`${curvature === 0 ? t("flat") : curvature * 10}`} onChange={(e) => setCurvature(parseInt(e) / 10)} />R */}
+              <Selector
+                columns={3}
+                options={
+                  [
+                    { value: "80", label: "800R" },
+                    { value: "100", label: "1000R" },
+                    { value: "150", label: "1500R" },
+                    { value: "180", label: "1800R" },
+                    { value: "300", label: "3000R" },
+                    { value: 0, label: t("flat") },
+                  ]
+                }
+                value={`${curvature}`}
+                onChange={(e) => setCurvature(parseInt(e))}
+              />
+            </Form.Item>
 
 
           </Form>
