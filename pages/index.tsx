@@ -15,7 +15,7 @@ const HEAD_SIZE = 6;
 const CAR_LENGTH = 424; // centimetres, used to calculate scale for monitors
 const BACKGROUND_COLOR = '#9dbbcc';
 const CANVAS_WIDTH = 600;
-const CANVAS_HEIGHT = 490;
+const CANVAS_HEIGHT = 560;
 const xOffset = 0;
 
 const commonDisplayConfigs = [
@@ -51,12 +51,12 @@ const loadImage = async (ctx: CanvasRenderingContext2D) => {
   const topImage = await getImage(`${currPath}/assets/images/brz_top.jpg`)
   const sideImage = await getImage(`${currPath}/assets/images/brz_side.jpg`)
   ctx.drawImage(topImage, 0, 0);
-  ctx.drawImage(sideImage, 0, topImage.height + 10);
+  ctx.drawImage(sideImage, 0, topImage.height + 80);
 
   console.log(topImage.height, topImage.width)
   headPositions.x = topImage.width * headPositions.normX;
   headPositions.ty = topImage.height * headPositions.normTY;
-  headPositions.sy = sideImage.height * headPositions.normSY + topImage.height + 10;
+  headPositions.sy = sideImage.height * headPositions.normSY + topImage.height + 80;
   carScale = topImage.width / CAR_LENGTH
   console.log('load images complete')
 }
