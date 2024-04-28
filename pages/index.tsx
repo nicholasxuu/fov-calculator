@@ -273,7 +273,7 @@ const drawMonitors = (
 
 const getMonitor = (screenSize: number, aspectRatio: number, curveRadius: number): any => {
   const realWidth = (2.54 * screenSize) * (aspectRatio / Math.sqrt(1 + aspectRatio * aspectRatio))
-  const realHeight = 2.54 * screenSize / aspectRatio
+  const realHeight = realWidth / aspectRatio
   const width = carScale * realWidth
   const height = carScale * realHeight
 
@@ -284,6 +284,7 @@ const getMonitor = (screenSize: number, aspectRatio: number, curveRadius: number
     curveAngle: 0,
   }
   if (curveRadius <= 0) {
+
     mon.h = height
     mon.w = width
   } else {
@@ -297,6 +298,7 @@ const getMonitor = (screenSize: number, aspectRatio: number, curveRadius: number
     mon.w = boxWidth * carScale
     mon.curveAngle = angle
   }
+  console.log("monitor info", mon)
   return mon
 }
 
@@ -365,7 +367,8 @@ const Home: NextPage = () => {
   const [distanceToScreen, setDistanceToScreen] = useState(70);
   const [language, setLanguage] = useState("cn");
   const [screenSize, setScreenSize] = useState(32);
-  const [aspectRatio, setAspectRatio] = useState(16 / 9);
+  const [aspectRatioA, setAspectRatioA] = useState(16);
+  const [aspectRatioB, setAspectRatioB] = useState(9);
   const [curvature, setCurvature] = useState(0)
   const [isTripleMonitor, setIsTripleMonitor] = useState(true)
   const [tripleMonitorAngle, setTripleMonitorAngle] = useState(60);
@@ -400,6 +403,7 @@ const Home: NextPage = () => {
       drawHeads(ctx)
 
 
+      const aspectRatio = aspectRatioA / aspectRatioB;
       const monitorInfo = getMonitor(screenSize, aspectRatio, curvature)
       const displayPos = calculateDisplayXYPos(distanceToScreen, monitorInfo, tripleMonitorAngle);
       const verticalAngleNum = calcAngleNum(
@@ -471,7 +475,8 @@ const Home: NextPage = () => {
   }, [
     distanceToScreen,
     screenSize,
-    aspectRatio,
+    aspectRatioA,
+    aspectRatioB,
     curvature,
     isTripleMonitor,
     tripleMonitorAngle,
@@ -481,7 +486,7 @@ const Home: NextPage = () => {
     <div className={styles.container}>
       <Head>
         <title>fov calculator</title>
-        <meta name="description" content="fov calculator" />
+        <meta name="description" content="sim racing cockpit fov calculator" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
@@ -541,6 +546,8 @@ const Home: NextPage = () => {
             </Form.Item>
 
             <Form.Item label={t("distanceToScreen")}>
+              <InputNumber value={distanceToScreen} onChange={setDistanceToScreen} />cm
+              <br />
               <Slider
                 value={distanceToScreen}
                 min={40}
@@ -558,6 +565,8 @@ const Home: NextPage = () => {
             </Form.Item>
 
             <Form.Item label={t("screenSize")}>
+              <InputNumber value={screenSize} onChange={setScreenSize} />{`${t("inch")}`}
+              <br />
               <Slider
                 value={screenSize}
                 min={5}
@@ -573,30 +582,39 @@ const Home: NextPage = () => {
                 }}
                 onChange={setScreenSize}
               />
-              <InputNumber value={screenSize} onChange={setScreenSize} />
             </Form.Item>
 
 
             <Form.Item label={t("aspectRatio")}>
+              <InputNumber value={aspectRatioA} onChange={setAspectRatioA} /> / <InputNumber value={aspectRatioB} onChange={setAspectRatioB} />
+              <br />
               <Select
-                value={aspectRatio}
+                value={`${aspectRatioA}:${aspectRatioB}`}
                 style={{ width: 120 }}
-                onChange={setAspectRatio}
+                onChange={(e: string) => {
+                  const values = e.split(":")
+                  setAspectRatioA(parseInt(values[0]))
+                  setAspectRatioB(parseInt(values[1]))
+                }}
               >
-                <Option value={16 / 9}>16:9</Option>
-                <Option value={16 / 10}>16:10</Option>
-                <Option value={4 / 3}>4:3</Option>
-                <Option value={21 / 9}>21:9</Option>
-                <Option value={32 / 9}>32:9</Option>
+                <Option value={"16:9"}>16:9</Option>
+                <Option value={"16:10"}>16:10</Option>
+                <Option value={"4:3"}>4:3</Option>
+                <Option value={"21:9"}>21:9</Option>
+                <Option value={"32:9"}>32:9</Option>
               </Select>
+
             </Form.Item>
 
             <Form.Item label={t("curvature")}>
+              <InputNumber value={`${curvature === 0 ? t("flat") : curvature * 10}`} onChange={(e) => setCurvature(parseInt(e) / 10)} />R
+              <br />
               <Radio.Group value={`${curvature}`} onChange={(e) => setCurvature(parseInt(e.target.value))}>
                 <Radio.Button value="80">800R</Radio.Button>
                 <Radio.Button value="100">1000R</Radio.Button>
                 <Radio.Button value="150">1500R</Radio.Button>
                 <Radio.Button value="180">1800R</Radio.Button>
+                <Radio.Button value="300">3000R</Radio.Button>
                 <Radio.Button value="0">{t("flat")}</Radio.Button>
               </Radio.Group>
             </Form.Item>
