@@ -1,15 +1,12 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
 import { useEffect, useState, useRef } from 'react'
-import { Select, Form, Slider, Radio, Input, InputNumber } from 'antd';
+import { Selector, Form, Slider, Input } from 'antd-mobile';
 
-import 'antd/dist/antd.css';
-import Checkbox from 'antd/lib/checkbox/Checkbox';
 import { useTranslation } from 'react-i18next';
 import i18n from '../src/i18n';
 import styles from '../styles/Home.module.css'
 
-const { Option } = Select;
 
 const MONITOR_COLOR = '#f00';
 const MONITOR_THICKNESS = 5;
@@ -492,10 +489,16 @@ const Home: NextPage = () => {
 
       <main className={styles.main}>
         <div className={styles.header}>
-          <Radio.Group value={language} onChange={(e) => { setLanguage(e.target.value) }}>
-            <Radio.Button value="en">English</Radio.Button>
-            <Radio.Button value="cn">中文</Radio.Button>
-          </Radio.Group>
+          <Selector
+            options={
+              [
+                { value: "en", label: "English" },
+                { value: "cn", label: "中文" },
+              ]
+            }
+            defaultValue={[language]}
+            onChange={(e) => { setLanguage(e[0]) }}
+          />
         </div>
 
         <div className={styles.body}>
@@ -517,15 +520,19 @@ const Home: NextPage = () => {
           <Form
             className={styles.mainform}
             name="basic"
-            labelCol={{ span: 8 }}
-            wrapperCol={{ span: 16 }}
           >
-
             <Form.Item label={t("tripleMonitor")}>
-              <Radio.Group value={isTripleMonitor} onChange={(e) => { setIsTripleMonitor(e.target.value) }}>
-                <Radio.Button value={false}>{t("singleMonitor")}</Radio.Button>
-                <Radio.Button value={true}>{t("tripleMonitor")}</Radio.Button>
-              </Radio.Group>
+              <Selector
+                columns={2}
+                options={
+                  [
+                    { value: "0", label: t("singleMonitor") },
+                    { value: "1", label: t("tripleMonitor") },
+                  ]
+                }
+                defaultValue={[isTripleMonitor ? "1" : ""]}
+                onChange={(e) => { setIsTripleMonitor(e[0] === "1") }}
+              />
             </Form.Item>
 
             <Form.Item label={t("tripleMonitorAngle")}>
@@ -534,38 +541,29 @@ const Home: NextPage = () => {
                 value={tripleMonitorAngle}
                 min={0}
                 max={90}
-                marks={{
-                  0: '0',
-                  30: '30',
-                  60: '60',
-                  70: '70',
-                  90: '90',
+                onChange={(e) => {
+                  // console.log("!!!!", e);
+                  setTripleMonitorAngle(e)
                 }}
-                onChange={setTripleMonitorAngle}
               />
             </Form.Item>
 
             <Form.Item label={t("distanceToScreen")}>
-              <InputNumber value={distanceToScreen} onChange={setDistanceToScreen} />cm
+              <Input type="number" value={`${distanceToScreen}`} onChange={(e) => setDistanceToScreen(parseInt(e))} />cm
               <br />
               <Slider
                 value={distanceToScreen}
                 min={40}
                 max={200}
-                marks={{
-                  40: '40',
-                  50: '50',
-                  70: '70',
-                  100: '100',
-                  150: '150',
-                  200: '200',
+                onChange={(e) => {
+                  // console.log("!!!!", e);
+                  setDistanceToScreen(e)
                 }}
-                onChange={setDistanceToScreen}
               />
             </Form.Item>
-
+            {/* 
             <Form.Item label={t("screenSize")}>
-              <InputNumber value={screenSize} onChange={setScreenSize} />{`${t("inch")}`}
+              <Input type="number" value={screenSize} onChange={setScreenSize} />{`${t("inch")}`}
               <br />
               <Slider
                 value={screenSize}
@@ -586,7 +584,7 @@ const Home: NextPage = () => {
 
 
             <Form.Item label={t("aspectRatio")}>
-              <InputNumber value={aspectRatioA} onChange={setAspectRatioA} /> / <InputNumber value={aspectRatioB} onChange={setAspectRatioB} />
+              <Input type="number" value={aspectRatioA} onChange={setAspectRatioA} /> / <Input type="number" value={aspectRatioB} onChange={setAspectRatioB} />
               <br />
               <Select
                 value={`${aspectRatioA}:${aspectRatioB}`}
@@ -607,7 +605,7 @@ const Home: NextPage = () => {
             </Form.Item>
 
             <Form.Item label={t("curvature")}>
-              <InputNumber value={`${curvature === 0 ? t("flat") : curvature * 10}`} onChange={(e) => setCurvature(parseInt(e) / 10)} />R
+              <Input type="number" value={`${curvature === 0 ? t("flat") : curvature * 10}`} onChange={(e) => setCurvature(parseInt(e) / 10)} />R
               <br />
               <Radio.Group value={`${curvature}`} onChange={(e) => setCurvature(parseInt(e.target.value))}>
                 <Radio.Button value="80">800R</Radio.Button>
@@ -617,7 +615,7 @@ const Home: NextPage = () => {
                 <Radio.Button value="300">3000R</Radio.Button>
                 <Radio.Button value="0">{t("flat")}</Radio.Button>
               </Radio.Group>
-            </Form.Item>
+            </Form.Item> */}
 
 
           </Form>

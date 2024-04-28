@@ -5,6 +5,9 @@ const nextConfig = {
   output: "export",
   // basePath: "/fov-calculator",
   // assetPrefix: "/fov-calculator",
+  // transpilePackages: ["antd-mobile"],
 };
 
-module.exports = nextConfig;
+const withTM = require("next-transpile-modules")(["antd-mobile"]);
+
+module.exports = withTM(nextConfig);
