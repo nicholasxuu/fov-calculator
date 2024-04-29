@@ -553,7 +553,7 @@ const Home: NextPage = () => {
                     { value: "1", label: t("tripleMonitor") },
                   ]
                 }
-                value={[isTripleMonitor ? "1" : ""]}
+                value={[isTripleMonitor ? "1" : "0"]}
                 onChange={(e: ("" | "0" | "1")[]) => { setIsTripleMonitor(e[0] === "1") }}
               />
             </Form.Item>
