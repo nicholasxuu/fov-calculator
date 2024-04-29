@@ -22,12 +22,6 @@ const CANVAS_WIDTH = 600;
 const CANVAS_HEIGHT = 560;
 const xOffset = 0;
 
-const commonDisplayConfigs = [
-  {
-    aspectDisplay: "16:9",
-    aspectRatio: 16 / 9,
-  }
-]
 
 let headPositions = {
   normX: 0.57, // normalized value, 0-1
@@ -154,7 +148,7 @@ const drawAngle = (
   }
 }
 
-const drawWidth = (
+const drawLengthCalibration = (
   ctx: CanvasRenderingContext2D,
   totalWidth: number,
 
@@ -163,8 +157,6 @@ const drawWidth = (
 ) => {
   ctx.globalAlpha = 0.7;
   ctx.strokeStyle = MONITOR_COLOR;
-
-
 
   ctx.lineWidth = 1;
 
@@ -176,16 +168,14 @@ const drawWidth = (
   ctx.setLineDash([]);
 
   ctx.beginPath();
-  ctx.moveTo(toX - 50, centerY - totalWidth / 2);
-  ctx.lineTo(toX + 50, centerY - totalWidth / 2);
+  ctx.moveTo(toX - 20, centerY - totalWidth / 2);
+  ctx.lineTo(toX + 20, centerY - totalWidth / 2);
   ctx.stroke();
 
   ctx.beginPath();
-  ctx.moveTo(toX - 50, centerY + totalWidth / 2);
-  ctx.lineTo(toX + 50, centerY + totalWidth / 2);
+  ctx.moveTo(toX - 20, centerY + totalWidth / 2);
+  ctx.lineTo(toX + 20, centerY + totalWidth / 2);
   ctx.stroke();
-
-
 
   ctx.globalAlpha = 1;
   const textSize = 10;
@@ -225,6 +215,8 @@ const drawMonitors = (
   drawLine(ctx, sideMonX, monSY, monSY + monitorInfo.h);
   drawAngle(ctx, headX, headSY, sideMonX, monSY, sideMonX, monSY + monitorInfo.h, -30, 0, verticalAngleNum);
 
+  drawLengthCalibration(ctx, monitorInfo.h, headSY, sideMonX - 12);
+
   // top view, center monitor
   ctx.lineWidth = MONITOR_THICKNESS;
   if (curveRadius <= 0) {
@@ -233,6 +225,8 @@ const drawMonitors = (
     drawVerticalArc(ctx, topMonX, monTY, monTY + monitorInfo.w, curveRadius * carScale);
   }
   drawAngle(ctx, headX, headTY, topMonX, monTY, topMonX, monTY + monitorInfo.w, -30, 0, horizontalSingleAngleNum);
+
+  let topViewSidePointX = topMonX - 12;
 
   if (isTripleMonitor) {
     // top view, left monitor
@@ -266,8 +260,10 @@ const drawMonitors = (
     const cosY = monitorInfo.w * Math.cos(tripleAngle * Math.PI / 180)
     drawAngle(ctx, headX, headTY, topMonX + sinX, monTY - cosY, topMonX + sinX, monTY + monitorInfo.w + cosY, 10, 0, horizontalTripleAngleNum);
 
-    drawWidth(ctx, totalWidth, headTY, topMonX + sinX);
+    topViewSidePointX = topMonX + sinX;
   }
+
+  drawLengthCalibration(ctx, totalWidth, headTY, topViewSidePointX);
 
 
 }
