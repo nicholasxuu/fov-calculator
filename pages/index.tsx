@@ -623,7 +623,7 @@ const Home: NextPage = () => {
             <Form.Item label={`${t("curvature")}: ${curvature > 0 ? `${curvature}0R` : t("flat")}`}>
               {/* <Input type="number" value={`${curvature === 0 ? t("flat") : curvature * 10}`} onChange={(e) => setCurvature(parseInt(e) / 10)} />R */}
               <Selector
-                columns={3}
+                columns={4}
                 options={
                   [
                     { value: 80, label: "800R" },
@@ -631,6 +631,8 @@ const Home: NextPage = () => {
                     { value: 150, label: "1500R" },
                     { value: 180, label: "1800R" },
                     { value: 300, label: "3000R" },
+                    { value: 380, label: "3800R" },
+                    { value: 380, label: "4000R" },
                     { value: 0, label: t("flat") },
                   ]
                 }
