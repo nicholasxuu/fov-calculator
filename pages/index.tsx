@@ -362,9 +362,15 @@ const calculateDisplayXYPos = (
 function useStickyState(defaultValue: any, key: string) {
   const [value, setValue] = React.useState(() => {
     const stickyValue = window.localStorage.getItem(key);
-    return stickyValue !== null
-      ? JSON.parse(stickyValue)
-      : defaultValue;
+    if (stickyValue === null) {
+      return defaultValue;
+    }
+    try {
+      const res = JSON.parse(stickyValue)
+      return res;
+    } catch (e) {
+      return defaultValue;
+    }
   });
   React.useEffect(() => {
     window.localStorage.setItem(key, JSON.stringify(value));
