@@ -1,6 +1,7 @@
 # Display Field of View Calcuator
 
-<img width="500" alt="demo" src="https://github.com/nicholasxuu/fov-calculator/assets/676478/21bcfe49-8c74-463a-a11d-4bb85a419893">
+<img width="1378" alt="demo image" src="https://github.com/nicholasxuu/fov-calculator/assets/676478/5c5a9764-631d-4a04-b639-5de7441e8c94">
+
 
 Help you visually see the fov and room needed for your single monitor or triple monitor configuration.
 
