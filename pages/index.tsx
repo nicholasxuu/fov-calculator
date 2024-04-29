@@ -1,3 +1,5 @@
+import dynamic from 'next/dynamic'
+
 import type { NextPage } from 'next'
 import Head from 'next/head'
 import { useEffect, useState, useRef } from 'react'
@@ -7,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import i18n from '../src/i18n';
 import styles from '../styles/Home.module.css'
 import { SliderValue } from 'antd-mobile/es/components/slider';
+import React from 'react';
 
 
 const MONITOR_COLOR = '#f00';
@@ -356,20 +359,33 @@ const calculateDisplayXYPos = (
   }
 }
 
+function useStickyState(defaultValue: any, key: string) {
+  const [value, setValue] = React.useState(() => {
+    const stickyValue = window.localStorage.getItem(key);
+    return stickyValue !== null
+      ? JSON.parse(stickyValue)
+      : defaultValue;
+  });
+  React.useEffect(() => {
+    window.localStorage.setItem(key, JSON.stringify(value));
+  }, [key, value]);
+  return [value, setValue];
+}
 
 const Home: NextPage = () => {
   const canvas = useRef<HTMLCanvasElement>(null)
 
   const { t } = useTranslation();
 
-  const [distanceToScreen, setDistanceToScreen] = useState(70);
-  const [language, setLanguage] = useState("cn");
-  const [screenSize, setScreenSize] = useState(32);
-  const [aspectRatioA, setAspectRatioA] = useState(16);
-  const [aspectRatioB, setAspectRatioB] = useState(9);
-  const [curvature, setCurvature] = useState(0)
-  const [isTripleMonitor, setIsTripleMonitor] = useState(true)
-  const [tripleMonitorAngle, setTripleMonitorAngle] = useState(60);
+  const [language, setLanguage] = useStickyState(navigator.language === "zh-CN" ? "cn" : "en", "language");
+
+  const [distanceToScreen, setDistanceToScreen] = useStickyState(70, "distanceToScreen");
+  const [screenSize, setScreenSize] = useStickyState(32, "screenSize");
+  const [aspectRatioA, setAspectRatioA] = useStickyState(16, "aspectRatioA");
+  const [aspectRatioB, setAspectRatioB] = useStickyState(9, "aspectRatioB");
+  const [curvature, setCurvature] = useStickyState(0, "curvature")
+  const [isTripleMonitor, setIsTripleMonitor] = useStickyState(true, "isTripleMonitor")
+  const [tripleMonitorAngle, setTripleMonitorAngle] = useStickyState(60, "tripleMonitorAngle");
 
   const [gameFovs, setGameFovs] = useState({
     vFov: 0,
@@ -630,4 +646,5 @@ const Home: NextPage = () => {
   )
 }
 
-export default Home
+// disable SSR
+export default dynamic(() => Promise.resolve(Home), { ssr: false })
