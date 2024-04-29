@@ -628,7 +628,7 @@ const Home: NextPage = () => {
                     { value: 180, label: "1800R" },
                     { value: 300, label: "3000R" },
                     { value: 380, label: "3800R" },
-                    { value: 380, label: "4000R" },
+                    { value: 400, label: "4000R" },
                     { value: 0, label: t("flat") },
                   ]
                 }
