@@ -24,7 +24,7 @@ const xOffset = 0;
 
 
 let headPositions = {
-  normX: 0.57, // normalized value, 0-1
+  normX: 0.555, // normalized value, 0-1
   normTY: 0.67,
   normSY: 0.22,
   x: 0,
