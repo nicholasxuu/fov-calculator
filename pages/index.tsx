@@ -1,30 +1,25 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
 import { useEffect, useState, useRef } from 'react'
-import { Selector, Form, Slider, Input } from 'antd-mobile';
+import { Selector, Form, Slider, Input, Button } from 'antd-mobile';
 
 import { useTranslation } from 'react-i18next';
 import i18n from '../src/i18n';
 import styles from '../styles/Home.module.css'
 import { SliderValue } from 'antd-mobile/es/components/slider';
+import { t } from 'i18next';
 
 
 const MONITOR_COLOR = '#f00';
 const MONITOR_THICKNESS = 5;
-const FOV_COLOR = '#d77';
 const HEAD_SIZE = 6;
 const CAR_LENGTH = 424; // centimetres, used to calculate scale for monitors
-const BACKGROUND_COLOR = '#9dbbcc';
+const BACKGROUND_COLOR = '#ffffff';
+const TEXT_COLOR = '#666666';
 const CANVAS_WIDTH = 600;
 const CANVAS_HEIGHT = 560;
 const xOffset = 0;
 
-const commonDisplayConfigs = [
-  {
-    aspectDisplay: "16:9",
-    aspectRatio: 16 / 9,
-  }
-]
 
 let headPositions = {
   normX: 0.57, // normalized value, 0-1
@@ -51,6 +46,10 @@ const loadImage = async (ctx: CanvasRenderingContext2D) => {
   const currPath = `${window.location.protocol}//${window.location.hostname}:${window.location.port}/${window.location.pathname}`;
   const topImage = await getImage(`${currPath}/assets/images/brz_top.jpg`)
   const sideImage = await getImage(`${currPath}/assets/images/brz_side.jpg`)
+  // fill canvas with white background
+  ctx.fillStyle = BACKGROUND_COLOR;
+  ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
   ctx.drawImage(topImage, 0, 0);
   ctx.drawImage(sideImage, 0, topImage.height + 80);
 
@@ -60,6 +59,7 @@ const loadImage = async (ctx: CanvasRenderingContext2D) => {
   headPositions.sy = sideImage.height * headPositions.normSY + topImage.height + 80;
   carScale = topImage.width / CAR_LENGTH
   console.log('load images complete')
+
 }
 
 const drawHeads = (ctx: CanvasRenderingContext2D) => {
@@ -116,6 +116,30 @@ const drawLine = (
   ctx.moveTo(x, fromY);
   ctx.lineTo(x, toY);
   ctx.stroke();
+}
+
+const drawDistanceLine = (
+  ctx: CanvasRenderingContext2D,
+  topMonX: number,
+  headX: number,
+  headSY: number,
+  distanceToScreen: number,
+) => {
+  ctx.globalAlpha = 0.7;
+  ctx.strokeStyle = MONITOR_COLOR;
+
+  ctx.setLineDash([5, 5]);
+  ctx.beginPath();
+  ctx.moveTo(topMonX, headSY);
+  ctx.lineTo(headX - 32, headSY);
+  ctx.moveTo(headX - 5, headSY);
+  ctx.lineTo(headX, headSY);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  ctx.globalAlpha = 1;
+  const textSize = 10;
+  ctx.fillText(`${distanceToScreen} cm`, topMonX + 5, headSY - textSize / 2)
 }
 
 const drawAngle = (
@@ -189,6 +213,23 @@ const drawWidth = (
   ctx.fillText(`${(totalWidth / carScale + 2).toFixed(1)} cm`, toX, centerY - totalWidth / 2 - textSize / 2)
 }
 
+const drawSpecText = (
+  ctx: CanvasRenderingContext2D,
+  screenSize: number,
+  isTripleMonitor: boolean,
+  tripleMonitorAngle: number,
+  aspectRatioA: number,
+  aspectRatioB: number,
+  curvature: number,
+  headSY: number,
+) => {
+  ctx.globalAlpha = 1;
+  ctx.fillStyle = TEXT_COLOR;
+  ctx.font = "15px Arial";
+  ctx.fillText(`${screenSize}${t("inch")} ${isTripleMonitor ? `${t("tripleMonitor")} ${tripleMonitorAngle}\u00B0 ${t("angle")}` : ""}`, 10, headSY - 30);
+  ctx.fillText(`${aspectRatioA}:${aspectRatioB} ${curvature > 0 ? `${curvature}0R` : t("flat")}`, 10, headSY - 10);
+}
+
 const drawMonitors = (
   ctx: CanvasRenderingContext2D,
   curveRadius: number, // cm
@@ -199,6 +240,7 @@ const drawMonitors = (
   horizontalSingleAngleNum: number,
   horizontalTripleAngleNum: number,
   totalWidth: number,
+  distanceToScreen: number,
 ) => {
   console.log("draw monitors");
   ctx.globalAlpha = 0.5;
@@ -221,6 +263,7 @@ const drawMonitors = (
   ctx.lineWidth = MONITOR_THICKNESS;
   drawLine(ctx, sideMonX, monSY, monSY + monitorInfo.h);
   drawAngle(ctx, headX, headSY, sideMonX, monSY, sideMonX, monSY + monitorInfo.h, -30, 0, verticalAngleNum);
+  drawDistanceLine(ctx, topMonX, headX, headSY, distanceToScreen);
 
   // top view, center monitor
   ctx.lineWidth = MONITOR_THICKNESS;
@@ -397,6 +440,7 @@ const Home: NextPage = () => {
       }
       ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
 
+
       await loadImage(ctx)
       drawHeads(ctx)
 
@@ -449,6 +493,18 @@ const Home: NextPage = () => {
         horizontalSingleAngleNum,
         horizontalTripleAngleNum,
         totalWidth,
+        distanceToScreen,
+      )
+
+      drawSpecText(
+        ctx,
+        screenSize,
+        isTripleMonitor,
+        tripleMonitorAngle,
+        aspectRatioA,
+        aspectRatioB,
+        curvature,
+        headPositions.sy
       )
 
       // horizontalTripleAngleNum from angle number to radians
@@ -480,6 +536,15 @@ const Home: NextPage = () => {
     tripleMonitorAngle,
   ])
 
+  const handleExportCanvasAsImage = () => {
+    const canvas = document.getElementById('fov-preview') as HTMLCanvasElement;
+    const dataURL = canvas.toDataURL('image/jpeg');
+    const a = document.createElement('a');
+    a.href = dataURL;
+    a.download = 'fov-preview.jpeg';
+    a.click();
+  }
+
   return (
     <div className={styles.container}>
       <Head>
@@ -500,7 +565,10 @@ const Home: NextPage = () => {
             defaultValue={[language]}
             onChange={(e) => { setLanguage(e[0]) }}
           />
+
+          <Button onClick={handleExportCanvasAsImage} color='primary' fill='outline' style={{ position: 'absolute', right: 10, top: 20 }}>导出</Button>
         </div>
+
 
         <div className={styles.body}>
           <div className={styles.display}>
