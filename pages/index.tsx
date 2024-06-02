@@ -541,7 +541,7 @@ const Home: NextPage = () => {
     const dataURL = canvas.toDataURL('image/jpeg');
     const a = document.createElement('a');
     a.href = dataURL;
-    a.download = 'fov-preview.jpeg';
+    a.download = `fov-preview-${screenSize}${isTripleMonitor ? "x3" : ""}-${tripleMonitorAngle}.jpeg`;
     a.click();
   }
 
