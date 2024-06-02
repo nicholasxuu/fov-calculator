@@ -43,14 +43,16 @@ const getImage = (src: string) => new Promise<HTMLImageElement>((resolve) => {
 
 const loadImage = async (ctx: CanvasRenderingContext2D) => {
   console.log('load images')
-  ctx.globalAlpha = 0.5;
+
 
   const currPath = `${window.location.protocol}//${window.location.hostname}:${window.location.port}/${window.location.pathname}`;
   const topImage = await getImage(`${currPath}/assets/images/brz_top.jpg`)
   const sideImage = await getImage(`${currPath}/assets/images/brz_side.jpg`)
   // fill canvas with white background
+  ctx.globalAlpha = 1;
   ctx.fillStyle = BACKGROUND_COLOR;
   ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+  ctx.globalAlpha = 0.5;
 
   ctx.drawImage(topImage, 0, 0);
   ctx.drawImage(sideImage, 0, topImage.height + 80);
