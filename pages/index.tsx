@@ -1,3 +1,5 @@
+import dynamic from 'next/dynamic'
+
 import type { NextPage } from 'next'
 import Head from 'next/head'
 import { useEffect, useState, useRef } from 'react'
@@ -6,8 +8,8 @@ import { Selector, Form, Slider, Input, Button } from 'antd-mobile';
 import { useTranslation } from 'react-i18next';
 import i18n from '../src/i18n';
 import styles from '../styles/Home.module.css'
-import { SliderValue } from 'antd-mobile/es/components/slider';
 import { t } from 'i18next';
+import React from 'react';
 
 
 const MONITOR_COLOR = '#f00';
@@ -22,7 +24,7 @@ const xOffset = 0;
 
 
 let headPositions = {
-  normX: 0.57, // normalized value, 0-1
+  normX: 0.555, // normalized value, 0-1
   normTY: 0.67,
   normSY: 0.22,
   x: 0,
@@ -175,7 +177,7 @@ const drawAngle = (
   }
 }
 
-const drawWidth = (
+const drawLengthCalibration = (
   ctx: CanvasRenderingContext2D,
   totalWidth: number,
 
@@ -184,8 +186,6 @@ const drawWidth = (
 ) => {
   ctx.globalAlpha = 0.7;
   ctx.strokeStyle = MONITOR_COLOR;
-
-
 
   ctx.lineWidth = 1;
 
@@ -197,16 +197,14 @@ const drawWidth = (
   ctx.setLineDash([]);
 
   ctx.beginPath();
-  ctx.moveTo(toX - 50, centerY - totalWidth / 2);
-  ctx.lineTo(toX + 50, centerY - totalWidth / 2);
+  ctx.moveTo(toX - 20, centerY - totalWidth / 2);
+  ctx.lineTo(toX + 20, centerY - totalWidth / 2);
   ctx.stroke();
 
   ctx.beginPath();
-  ctx.moveTo(toX - 50, centerY + totalWidth / 2);
-  ctx.lineTo(toX + 50, centerY + totalWidth / 2);
+  ctx.moveTo(toX - 20, centerY + totalWidth / 2);
+  ctx.lineTo(toX + 20, centerY + totalWidth / 2);
   ctx.stroke();
-
-
 
   ctx.globalAlpha = 1;
   const textSize = 10;
@@ -265,6 +263,8 @@ const drawMonitors = (
   drawAngle(ctx, headX, headSY, sideMonX, monSY, sideMonX, monSY + monitorInfo.h, -30, 0, verticalAngleNum);
   drawDistanceLine(ctx, topMonX, headX, headSY, distanceToScreen);
 
+  drawLengthCalibration(ctx, monitorInfo.h, headSY, sideMonX - 12);
+
   // top view, center monitor
   ctx.lineWidth = MONITOR_THICKNESS;
   if (curveRadius <= 0) {
@@ -273,6 +273,8 @@ const drawMonitors = (
     drawVerticalArc(ctx, topMonX, monTY, monTY + monitorInfo.w, curveRadius * carScale);
   }
   drawAngle(ctx, headX, headTY, topMonX, monTY, topMonX, monTY + monitorInfo.w, -30, 0, horizontalSingleAngleNum);
+
+  let topViewSidePointX = topMonX - 12;
 
   if (isTripleMonitor) {
     // top view, left monitor
@@ -306,8 +308,10 @@ const drawMonitors = (
     const cosY = monitorInfo.w * Math.cos(tripleAngle * Math.PI / 180)
     drawAngle(ctx, headX, headTY, topMonX + sinX, monTY - cosY, topMonX + sinX, monTY + monitorInfo.w + cosY, 10, 0, horizontalTripleAngleNum);
 
-    drawWidth(ctx, totalWidth, headTY, topMonX + sinX);
+    topViewSidePointX = topMonX + sinX;
   }
+
+  drawLengthCalibration(ctx, totalWidth, headTY, topViewSidePointX);
 
 
 }
@@ -399,20 +403,39 @@ const calculateDisplayXYPos = (
   }
 }
 
+function useStickyState(defaultValue: any, key: string) {
+  const [value, setValue] = React.useState(() => {
+    const stickyValue = window.localStorage.getItem(key);
+    if (stickyValue === null) {
+      return defaultValue;
+    }
+    try {
+      const res = JSON.parse(stickyValue)
+      return res;
+    } catch (e) {
+      return defaultValue;
+    }
+  });
+  React.useEffect(() => {
+    window.localStorage.setItem(key, JSON.stringify(value));
+  }, [key, value]);
+  return [value, setValue];
+}
 
 const Home: NextPage = () => {
   const canvas = useRef<HTMLCanvasElement>(null)
 
   const { t } = useTranslation();
 
-  const [distanceToScreen, setDistanceToScreen] = useState(70);
-  const [language, setLanguage] = useState("cn");
-  const [screenSize, setScreenSize] = useState(32);
-  const [aspectRatioA, setAspectRatioA] = useState(16);
-  const [aspectRatioB, setAspectRatioB] = useState(9);
-  const [curvature, setCurvature] = useState(0)
-  const [isTripleMonitor, setIsTripleMonitor] = useState(true)
-  const [tripleMonitorAngle, setTripleMonitorAngle] = useState(60);
+  const [language, setLanguage] = useStickyState(navigator.language === "zh-CN" ? "cn" : "en", "language");
+
+  const [distanceToScreen, setDistanceToScreen] = useStickyState(70, "distanceToScreen");
+  const [screenSize, setScreenSize] = useStickyState(32, "screenSize");
+  const [aspectRatioA, setAspectRatioA] = useStickyState(16, "aspectRatioA");
+  const [aspectRatioB, setAspectRatioB] = useStickyState(9, "aspectRatioB");
+  const [curvature, setCurvature] = useStickyState(0, "curvature")
+  const [isTripleMonitor, setIsTripleMonitor] = useStickyState(true, "isTripleMonitor")
+  const [tripleMonitorAngle, setTripleMonitorAngle] = useStickyState(60, "tripleMonitorAngle");
 
   const [gameFovs, setGameFovs] = useState({
     vFov: 0,
@@ -599,7 +622,7 @@ const Home: NextPage = () => {
                     { value: "1", label: t("tripleMonitor") },
                   ]
                 }
-                value={[isTripleMonitor ? "1" : ""]}
+                value={[isTripleMonitor ? "1" : "0"]}
                 onChange={(e: ("" | "0" | "1")[]) => { setIsTripleMonitor(e[0] === "1") }}
               />
             </Form.Item>
@@ -669,7 +692,7 @@ const Home: NextPage = () => {
             <Form.Item label={`${t("curvature")}: ${curvature > 0 ? `${curvature}0R` : t("flat")}`}>
               {/* <Input type="number" value={`${curvature === 0 ? t("flat") : curvature * 10}`} onChange={(e) => setCurvature(parseInt(e) / 10)} />R */}
               <Selector
-                columns={3}
+                columns={4}
                 options={
                   [
                     { value: 80, label: "800R" },
@@ -677,6 +700,8 @@ const Home: NextPage = () => {
                     { value: 150, label: "1500R" },
                     { value: 180, label: "1800R" },
                     { value: 300, label: "3000R" },
+                    { value: 380, label: "3800R" },
+                    { value: 400, label: "4000R" },
                     { value: 0, label: t("flat") },
                   ]
                 }
@@ -698,4 +723,5 @@ const Home: NextPage = () => {
   )
 }
 
-export default Home
+// disable SSR
+export default dynamic(() => Promise.resolve(Home), { ssr: false })
