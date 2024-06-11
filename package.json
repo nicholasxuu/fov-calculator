@@ -10,6 +10,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@next/third-parties": "^14.2.3",
     "antd-mobile": "^5.35.0",
     "i18next": "^23.10.1",
     "next": "12.2.5",
