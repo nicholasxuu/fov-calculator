@@ -3,7 +3,9 @@ import dynamic from 'next/dynamic'
 import type { NextPage } from 'next'
 import Head from 'next/head'
 import { useEffect, useState, useRef } from 'react'
-import { Selector, Form, Slider, Input, Button } from 'antd-mobile';
+import { Selector, Form, Slider, Button } from 'antd-mobile';
+import { GoogleAnalytics } from '@next/third-parties/google'
+
 
 import { useTranslation } from 'react-i18next';
 import i18n from '../src/i18n';
@@ -577,6 +579,8 @@ const Home: NextPage = () => {
         <meta name="description" content="sim racing cockpit fov calculator" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
+
+      <GoogleAnalytics gaId="G-GN8YEE6FBQ" />
 
       <main className={styles.main}>
         <div className={styles.header}>
