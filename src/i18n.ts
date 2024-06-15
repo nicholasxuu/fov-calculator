@@ -27,7 +27,8 @@ i18n
           f120192020: "F1 2019-2020",
           f12021: "F1 2021+",
           dirtrally: "Dirt Rally",
-          gtr2: "GTR2",
+          gtr2: "GTR2,Race07",
+          export_canvas: "Export",
         },
       },
       cn: {
@@ -50,6 +51,7 @@ i18n
           f12021: "F1 2021+",
           dirtrally: "尘埃拉力系列",
           gtr2: "GTR2,Race07",
+          export_canvas: "导出",
         },
       },
     },

@@ -591,7 +591,7 @@ const Home: NextPage = () => {
             onChange={(e) => { setLanguage(e[0]) }}
           />
 
-          <Button onClick={handleExportCanvasAsImage} color='primary' fill='outline' style={{ position: 'absolute', right: 10, top: 20 }}>导出</Button>
+          <Button onClick={handleExportCanvasAsImage} color='primary' fill='outline' style={{ position: 'absolute', right: 10, top: 20 }}>{t("export_canvas")}</Button>
         </div>
 
 
