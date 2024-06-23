@@ -11,12 +11,14 @@
   },
   "dependencies": {
     "@next/third-parties": "^14.2.3",
+    "@types/three": "^0.165.0",
     "antd-mobile": "^5.35.0",
     "i18next": "^23.10.1",
     "next": "12.2.5",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "react-i18next": "^14.1.0"
+    "react-i18next": "^14.1.0",
+    "three": "^0.165.0"
   },
   "devDependencies": {
     "@types/node": "18.7.13",

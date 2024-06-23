@@ -12,6 +12,7 @@ import i18n from '../src/i18n';
 import styles from '../styles/Home.module.css'
 import { t } from 'i18next';
 import React from 'react';
+import { useStickyState } from '../utils/useStickyState';
 
 
 const MONITOR_COLOR = '#f00';
@@ -407,24 +408,6 @@ const calculateDisplayXYPos = (
   }
 }
 
-function useStickyState(defaultValue: any, key: string) {
-  const [value, setValue] = React.useState(() => {
-    const stickyValue = window.localStorage.getItem(key);
-    if (stickyValue === null) {
-      return defaultValue;
-    }
-    try {
-      const res = JSON.parse(stickyValue)
-      return res;
-    } catch (e) {
-      return defaultValue;
-    }
-  });
-  React.useEffect(() => {
-    window.localStorage.setItem(key, JSON.stringify(value));
-  }, [key, value]);
-  return [value, setValue];
-}
 
 const Home: NextPage = () => {
   const canvas = useRef<HTMLCanvasElement>(null)
