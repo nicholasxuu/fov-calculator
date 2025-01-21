@@ -432,7 +432,7 @@ const Home: NextPage = () => {
   const [curvature, setCurvature] = useStickyState(0, "curvature")
   const [isTripleMonitor, setIsTripleMonitor] = useStickyState(true, "isTripleMonitor")
   const [tripleMonitorAngle, setTripleMonitorAngle] = useStickyState(60, "tripleMonitorAngle");
-  const [showCustomAspectRatioInput, setShowCustomAspectRatioInput] = useState(true);
+  const [showCustomAspectRatioInput, setShowCustomAspectRatioInput] = useState(false);
   const [showCustomCurvatureInput, setShowCustomCurvatureInput] = useState(false);
 
   const [gameFovs, setGameFovs] = useState({
