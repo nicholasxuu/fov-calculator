@@ -233,6 +233,15 @@ const drawSpecText = (
   ctx.fillText(`${aspectRatioA}:${aspectRatioB} ${curvature > 0 ? `${curvature}0R` : t("flat")}`, 10, headSY - 10);
 }
 
+const drawWatermark = (ctx: CanvasRenderingContext2D) => {
+  ctx.globalAlpha = 0.5;
+  ctx.fillStyle = TEXT_COLOR;
+  ctx.font = "15px Arial";
+  const watermark = "fovcalc.xusf.xyz"
+  ctx.fillText(watermark, 370, 15);
+  ctx.fillText(watermark, 170, CANVAS_HEIGHT - 10);
+}
+
 const drawMonitors = (
   ctx: CanvasRenderingContext2D,
   curveRadius: number, // cm
@@ -518,6 +527,8 @@ const Home: NextPage = () => {
         curvature,
         headPositions.sy
       )
+
+      drawWatermark(ctx)
 
       // horizontalTripleAngleNum from angle number to radians
       const hFovRad = (verticalAngleNum / 180 * Math.PI).toFixed(4)
