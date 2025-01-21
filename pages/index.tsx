@@ -3,7 +3,7 @@ import dynamic from 'next/dynamic'
 import type { NextPage } from 'next'
 import Head from 'next/head'
 import { useEffect, useState, useRef } from 'react'
-import { Selector, Form, Slider, Button } from 'antd-mobile';
+import { Selector, Form, Slider, Button, Input } from 'antd-mobile';
 import { GoogleAnalytics } from '@next/third-parties/google'
 
 
@@ -423,6 +423,8 @@ const Home: NextPage = () => {
   const [curvature, setCurvature] = useStickyState(0, "curvature")
   const [isTripleMonitor, setIsTripleMonitor] = useStickyState(true, "isTripleMonitor")
   const [tripleMonitorAngle, setTripleMonitorAngle] = useStickyState(60, "tripleMonitorAngle");
+  const [showCustomAspectRatioInput, setShowCustomAspectRatioInput] = useState(true);
+  const [showCustomCurvatureInput, setShowCustomCurvatureInput] = useState(false);
 
   const [gameFovs, setGameFovs] = useState({
     vFov: 0,
@@ -601,6 +603,7 @@ const Home: NextPage = () => {
           <Form
             className={styles.mainform}
             name="basic"
+            style={{ width: '360px' }}
           >
             <Form.Item>
               <Selector
@@ -642,63 +645,103 @@ const Home: NextPage = () => {
               <Slider
                 value={screenSize}
                 min={5}
-                max={85}
+                max={110}
                 popover
                 onChange={(e) => setScreenSize(e as number)}
               />
             </Form.Item>
 
+            <div style={{ height: 88 }}>
+              {showCustomAspectRatioInput ? (
+                <Form.Item label={`${t("aspectRatio")}: ${aspectRatioA} : ${aspectRatioB}`}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', justifyContent: 'flex-start' }}>
+                      <Input type="number" value={aspectRatioA} onChange={setAspectRatioA} style={{ width: '70px', '--text-align': 'center' }} />
+                      <span style={{ lineHeight: '23px' }}>:</span>
+                      <Input type="number" value={aspectRatioB} onChange={setAspectRatioB} style={{ width: '70px', '--text-align': 'center' }} />
+                    </div>
+                    <Button
+                      fill="outline"
+                      color="primary"
+                      onClick={() => setShowCustomAspectRatioInput(false)}
+                    >
+                      {t("back")}
+                    </Button>
+                  </div>
+                </Form.Item>
+              ) : (
+                <Form.Item label={`${t("aspectRatio")}: ${aspectRatioA} : ${aspectRatioB}`}>
+                  <Selector
+                    columns={4}
+                    options={[
+                      { value: "16:9", label: "16:9" },
+                      { value: "21:9", label: "21:9" },
+                      { value: "32:9", label: "32:9" },
+                      { value: "0:0", label: t("custom") },
+                    ]}
+                    value={[`${aspectRatioA}:${aspectRatioB}`]}
+                    onChange={(e: `${number}:${number}`[]) => {
+                      if (e[0] === "0:0") {
+                        setShowCustomAspectRatioInput(true);
+                        return;
+                      }
+                      const values = e[0].split(":");
+                      setAspectRatioA(parseInt(values[0]));
+                      setAspectRatioB(parseInt(values[1]));
+                    }}
+                  />
+                </Form.Item>
+              )}
+            </div>
 
-            <Form.Item label={`${t("aspectRatio")}: ${aspectRatioA} : ${aspectRatioB}`}>
-              {/* <Input type="number" value={aspectRatioA} onChange={setAspectRatioA} /> / <Input type="number" value={aspectRatioB} onChange={setAspectRatioB} /> */}
-              <Selector
-                columns={5}
-                options={
-                  [
-                    { value: "16:9", label: "16:9" },
-                    { value: "16:10", label: "16:10" },
-                    { value: "4:3", label: "4:3" },
-                    { value: "21:9", label: "21:9" },
-                    { value: "32:9", label: "32:9" },
-                    { value: "9:16", label: "9:16" },
-                    { value: "10:16", label: "10:16" },
-                    { value: "3:4", label: "3:4" },
-                    { value: "9:21", label: "9:21" },
-                    { value: "9:32", label: "9:32" },
-                  ]
-                }
-                value={[`${aspectRatioA}:${aspectRatioB}`]}
-                onChange={(e: `${number}:${number}`[]) => {
-                  const values = e[0].split(":");
-                  setAspectRatioA(parseInt(values[0]));
-                  setAspectRatioB(parseInt(values[1]));
-                }}
-              />
-
-            </Form.Item>
-
-
-            <Form.Item label={`${t("curvature")}: ${curvature > 0 ? `${curvature}0R` : t("flat")}`}>
-              {/* <Input type="number" value={`${curvature === 0 ? t("flat") : curvature * 10}`} onChange={(e) => setCurvature(parseInt(e) / 10)} />R */}
-              <Selector
-                columns={4}
-                options={
-                  [
-                    { value: 80, label: "800R" },
-                    { value: 100, label: "1000R" },
-                    { value: 150, label: "1500R" },
-                    { value: 180, label: "1800R" },
-                    { value: 300, label: "3000R" },
-                    { value: 380, label: "3800R" },
-                    { value: 400, label: "4000R" },
-                    { value: 0, label: t("flat") },
-                  ]
-                }
-                value={[curvature]}
-                onChange={(e: number[]) => setCurvature(e[0])}
-              />
-            </Form.Item>
-
+            <div style={{ height: '158px' }}>
+              {showCustomCurvatureInput ? (
+                <Form.Item label={`${t("curvature")}: ${curvature > 0 ? `${curvature}0R` : t("flat")}`}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <Input
+                        type="number"
+                        value={curvature === 0 ? "0" : `${curvature * 10}`}
+                        onChange={(val) => setCurvature(parseInt(val) / 10)}
+                        style={{ width: '100px', '--text-align': 'center' }}
+                      />
+                      <span>R</span>
+                    </div>
+                    <Button
+                      fill="outline"
+                      color="primary"
+                      onClick={() => setShowCustomCurvatureInput(false)}
+                    >
+                      {t("back")}
+                    </Button>
+                  </div>
+                </Form.Item>
+              ) : (
+                <Form.Item label={`${t("curvature")}: ${curvature > 0 ? `${curvature}0R` : t("flat")}`}>
+                  <Selector
+                    columns={4}
+                    options={[
+                      { value: 80, label: "800R" },
+                      { value: 100, label: "1000R" },
+                      { value: 150, label: "1500R" },
+                      { value: 180, label: "1800R" },
+                      { value: 230, label: "2300R" },
+                      { value: 380, label: "3800R" },
+                      { value: 0, label: t("flat") },
+                      { value: -1, label: t("custom") },
+                    ]}
+                    value={[curvature]}
+                    onChange={(e: number[]) => {
+                      if (e[0] === -1) {
+                        setShowCustomCurvatureInput(true);
+                        return;
+                      }
+                      setCurvature(e[0]);
+                    }}
+                  />
+                </Form.Item>
+              )}
+            </div>
 
           </Form>
 

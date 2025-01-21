@@ -29,6 +29,8 @@ i18n
           dirtrally: "Dirt Rally",
           gtr2: "GTR2,Race07",
           export_canvas: "Export",
+          custom: "Custom",
+          back: "Back",
         },
       },
       cn: {
@@ -52,6 +54,8 @@ i18n
           dirtrally: "尘埃拉力系列",
           gtr2: "GTR2,Race07",
           export_canvas: "导出",
+          custom: "自定义",
+          back: "返回",
         },
       },
     },
