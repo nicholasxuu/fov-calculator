@@ -435,6 +435,7 @@ const Home: NextPage = () => {
   const [tripleMonitorAngle, setTripleMonitorAngle] = useStickyState(60, "tripleMonitorAngle");
   const [showCustomAspectRatioInput, setShowCustomAspectRatioInput] = useState(false);
   const [showCustomCurvatureInput, setShowCustomCurvatureInput] = useState(false);
+  const [searchText, setSearchText] = useState("");
 
   const [gameFovs, setGameFovs] = useState<Record<string, string | number>>(() => {
     const initialFovs: Record<string, string | number> = {
@@ -602,6 +603,16 @@ const Home: NextPage = () => {
     a.click();
   }
 
+  // 过滤游戏列表
+  const filteredGames = Object.entries(GameList).filter(([_, gameInfo]) => {
+    if (!searchText) return true;
+    const searchLower = searchText.toLowerCase();
+    return (
+      gameInfo.en.replace(/ /g, "").toLowerCase().includes(searchLower) ||
+      gameInfo.cn.replace(/ /g, "").toLowerCase().includes(searchLower)
+    );
+  });
+
   return (
     <div className={styles.container}>
       <Head>
@@ -633,13 +644,37 @@ const Home: NextPage = () => {
           <div className={styles.display}>
             <canvas id="fov-preview" ref={canvas} width={CANVAS_WIDTH} height={CANVAS_HEIGHT}></canvas>
             <div className={styles.gameFovData}>
-              {t("horizontalFov")}: {gameFovs.hFov}°<br />
-              {t("verticalFov")}: {gameFovs.vFov}°<br />
-              {Object.entries(GameList).map(([gameKey, gameInfo]) => (
-                <React.Fragment key={gameKey}>
-                  {t(`game_${gameKey}`)}: {gameFovs[gameKey]}{gameInfo.unit}<br />
-                </React.Fragment>
-              ))}
+              {t("horizontalFov")} {gameFovs.hFov}°<br />
+              {t("verticalFov")} {gameFovs.vFov}°<br />
+              <div style={{ marginTop: '0px', width: '100%', }}>
+                <Input
+                  placeholder={t("search_games")}
+                  clearable
+                  value={searchText}
+                  onChange={setSearchText}
+                  style={{ marginBottom: '0px', marginLeft: '0px', fontSize: '12px' }}
+                />
+                <div style={{
+                  maxHeight: '100px',
+                  overflowY: 'auto',
+                  border: '1px solid #eee',
+                  borderRadius: '4px',
+                  padding: '0px'
+                }}>
+                  {filteredGames.map(([gameKey, gameInfo]) => (
+                    <div key={gameKey} style={{
+                      padding: '4px 0',
+                      borderBottom: '1px solid #eee',
+                      display: 'flex',
+                      justifyContent: 'flex-start',
+                      alignItems: 'center',
+                    }}>
+                      <span>{t(`game_${gameKey}`)}</span>
+                      <span style={{ marginLeft: '8px' }}>{gameFovs[gameKey]}{gameInfo.unit}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
 

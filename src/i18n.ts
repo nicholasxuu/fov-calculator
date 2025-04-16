@@ -42,6 +42,7 @@ i18n
           export_canvas: "Export",
           custom: "Custom",
           back: "Back",
+          search_games: "Search games...",
           ...Object.entries(gameTranslations).reduce((acc, [key, value]) => {
             return { ...acc, [key]: value.en };
           }, {}),
@@ -64,6 +65,7 @@ i18n
           export_canvas: "导出",
           custom: "自定义",
           back: "返回",
+          search_games: "搜索游戏...",
           ...Object.entries(gameTranslations).reduce((acc, [key, value]) => {
             return { ...acc, [key]: value.cn };
           }, {}),
