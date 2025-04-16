@@ -1,5 +1,22 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
+import { GameList } from "./games";
+
+interface GameTranslation {
+  en: string;
+  cn: string;
+}
+
+// 将 GameList 转换为 i18n 格式
+const gameTranslations = Object.entries(GameList).reduce((acc, [key, value]) => {
+  return {
+    ...acc,
+    [`game_${key}`]: {
+      en: value.en,
+      cn: value.cn,
+    },
+  };
+}, {} as Record<string, GameTranslation>);
 
 i18n
   .use(initReactI18next) // passes i18n down to react-i18next
@@ -22,15 +39,12 @@ i18n
           aspectRatio: "Aspect Ratio",
           verticalFov: "Vertical FOV",
           horizontalFov: "Horizontal FOV",
-          richardburnsrally: "Richard Burns Rally",
-          f120162018: "F1 2016-2018",
-          f120192020: "F1 2019-2020",
-          f12021: "F1 2021+",
-          dirtrally: "Dirt Rally",
-          gtr2: "GTR2,Race07",
           export_canvas: "Export",
           custom: "Custom",
           back: "Back",
+          ...Object.entries(gameTranslations).reduce((acc, [key, value]) => {
+            return { ...acc, [key]: value.en };
+          }, {}),
         },
       },
       cn: {
@@ -47,15 +61,12 @@ i18n
           aspectRatio: "屏幕比例",
           verticalFov: "纵向角度",
           horizontalFov: "横向角度",
-          richardburnsrally: "理查德伯恩斯拉力赛",
-          f120162018: "F1 2016-2018",
-          f120192020: "F1 2019-2020",
-          f12021: "F1 2021+",
-          dirtrally: "尘埃拉力系列",
-          gtr2: "GTR2,Race07",
           export_canvas: "导出",
           custom: "自定义",
           back: "返回",
+          ...Object.entries(gameTranslations).reduce((acc, [key, value]) => {
+            return { ...acc, [key]: value.cn };
+          }, {}),
         },
       },
     },

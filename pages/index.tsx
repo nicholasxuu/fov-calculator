@@ -13,6 +13,7 @@ import styles from '../styles/Home.module.css'
 import { t } from 'i18next';
 import React from 'react';
 import { useStickyState } from '../utils/useStickyState';
+import { GameList } from '../src/games';
 
 
 const MONITOR_COLOR = '#f00';
@@ -368,7 +369,7 @@ const calcAngleNum = (
   fromY: number,
   toX: number,
   toY: number
-) => {
+): number => {
   if (fromX !== toX) {
     // won't calculate
     return -1
@@ -376,7 +377,7 @@ const calcAngleNum = (
   const yDiff = Math.abs(fromY - toY)
   const radius = Math.sqrt((fromX - centerX) ** 2 + (fromY - centerY) ** 2)
   const angle = Math.abs(Math.asin(yDiff / 2 / radius));
-  const angleNum = Math.round(angle / Math.PI * 180 * 2);
+  const angleNum = angle / Math.PI * 180 * 2;
 
   if (centerX < fromX) {
     return 360 - angleNum;
@@ -435,16 +436,19 @@ const Home: NextPage = () => {
   const [showCustomAspectRatioInput, setShowCustomAspectRatioInput] = useState(false);
   const [showCustomCurvatureInput, setShowCustomCurvatureInput] = useState(false);
 
-  const [gameFovs, setGameFovs] = useState({
-    vFov: 0,
-    hFov: 0,
-    richardBurnsRally: "",
-    f120162018: "",
-    f120192020: "",
-    f12021: "",
-    dirtrally: 0,
-    gtr2: 0,
-  })
+  const [gameFovs, setGameFovs] = useState<Record<string, string | number>>(() => {
+    const initialFovs: Record<string, string | number> = {
+      vFov: 0,
+      hFov: 0,
+    };
+
+    // 初始化所有游戏的 FOV 值
+    Object.keys(GameList).forEach(gameKey => {
+      initialFovs[gameKey] = "";
+    });
+
+    return initialFovs;
+  });
 
   useEffect(() => {
     i18n.changeLanguage(language)
@@ -510,9 +514,9 @@ const Home: NextPage = () => {
         isTripleMonitor,
         monitorInfo,
         displayPos,
-        verticalAngleNum,
-        horizontalSingleAngleNum,
-        horizontalTripleAngleNum,
+        Math.round(verticalAngleNum),
+        Math.round(horizontalSingleAngleNum),
+        Math.round(horizontalTripleAngleNum),
         totalWidth,
         distanceToScreen,
       )
@@ -530,21 +534,51 @@ const Home: NextPage = () => {
 
       drawWatermark(ctx)
 
-      // horizontalTripleAngleNum from angle number to radians
-      const hFovRad = (verticalAngleNum / 180 * Math.PI).toFixed(4)
-      const f120162018 = (Math.min(Math.max((horizontalTripleAngleNum - 77) / 2 * 0.05, -1), 1)).toFixed(2);
-      const f120192020 = (Math.min(Math.max((horizontalTripleAngleNum - 77) / 2 * 0.1, -10), 10)).toFixed(1);
-      const f12021 = (Math.min(Math.max((horizontalTripleAngleNum - 77) / 2 * 1, -20), 20)).toFixed(0);
-      setGameFovs({
-        vFov: verticalAngleNum,
-        hFov: horizontalTripleAngleNum,
-        richardBurnsRally: hFovRad,
-        f120162018: f120162018,
-        f120192020: f120192020,
-        f12021: f12021,
-        dirtrally: 0,
-        gtr2: 0,
-      })
+      // 计算所有游戏的 FOV 值
+      const newGameFovs: Record<string, string | number> = {
+        vFov: Math.round(verticalAngleNum),
+        hFov: Math.round(horizontalTripleAngleNum),
+      };
+
+      // 根据游戏类型计算对应的 FOV 值
+      Object.entries(GameList).forEach(([gameKey, gameInfo]) => {
+        let fovValue: string | number = "";
+
+        switch (gameInfo.type) {
+          case "cmf1-16-18":
+            fovValue = (Math.min(Math.max((horizontalTripleAngleNum - 77) / 2 * 0.05, -1), 1)).toFixed(gameInfo.digits);
+            break;
+          case "cmf1-19-20":
+            fovValue = (Math.min(Math.max((horizontalTripleAngleNum - 77) / 2 * 0.1, -10), 10)).toFixed(gameInfo.digits);
+            break;
+          case "cmf1-21":
+            fovValue = (Math.min(Math.max((horizontalTripleAngleNum - 77) / 2 * 1, -20), 20)).toFixed(gameInfo.digits);
+            break;
+          case "hfov-rad":
+            fovValue = (verticalAngleNum / 180 * Math.PI).toFixed(gameInfo.digits);
+            break;
+          case "hfov-deg":
+            fovValue = horizontalTripleAngleNum.toFixed(gameInfo.digits);
+            break;
+          case "vfov-deg":
+            fovValue = verticalAngleNum.toFixed(gameInfo.digits);
+            break;
+          case "vfov-degx2":
+            fovValue = (verticalAngleNum * 2).toFixed(gameInfo.digits);
+            break;
+          case "vfov-gtr2":
+            fovValue = Math.max(Math.min(1.5, (verticalAngleNum / 58)), 0.5).toFixed(gameInfo.digits);
+            break;
+          case "vfov-race07":
+            fovValue = Math.max(Math.min(1.5, (verticalAngleNum / 58)), 0.4).toFixed(gameInfo.digits);
+            break;
+
+        }
+
+        newGameFovs[gameKey] = fovValue;
+      });
+
+      setGameFovs(newGameFovs);
     }
 
     drawCanvas();
@@ -599,14 +633,13 @@ const Home: NextPage = () => {
           <div className={styles.display}>
             <canvas id="fov-preview" ref={canvas} width={CANVAS_WIDTH} height={CANVAS_HEIGHT}></canvas>
             <div className={styles.gameFovData}>
-              {t("verticalFov")}: {gameFovs.vFov}°<br />
               {t("horizontalFov")}: {gameFovs.hFov}°<br />
-              {t("richardburnsrally")}: {gameFovs.richardBurnsRally} rad<br />
-              {t("f120162018")}: {gameFovs.f120162018}<br />
-              {t("f120192020")}: {gameFovs.f120192020}<br />
-              {t("f12021")}: {gameFovs.f12021}<br />
-              {/* {t("dirtrally")}: {gameFovs.dirtrally}<br />
-              {t("gtr2")}: {gameFovs.gtr2}<br /> */}
+              {t("verticalFov")}: {gameFovs.vFov}°<br />
+              {Object.entries(GameList).map(([gameKey, gameInfo]) => (
+                <React.Fragment key={gameKey}>
+                  {t(`game_${gameKey}`)}: {gameFovs[gameKey]}{gameInfo.unit}<br />
+                </React.Fragment>
+              ))}
             </div>
           </div>
 
