@@ -129,8 +129,22 @@ export const GameList = {
     digits: 0,
   },
   eawrc: {
-    en: "EA WRC",
+    en: "EA Sports WRC",
     cn: "EA WRC",
+    unit: "",
+    type: "vfov-deg",
+    digits: 0,
+  },
+  forzamotorsport: {
+    en: "Forza Motorsport",
+    cn: "极限竞速",
+    unit: "",
+    type: "vfov-deg",
+    digits: 0,
+  },
+  forzahorizon: {
+    en: "Forza Horizon",
+    cn: "极限竞速：地平线 FH",
     unit: "",
     type: "vfov-deg",
     digits: 0,
