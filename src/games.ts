@@ -68,8 +68,8 @@ export const GameList = {
   dirtrally12: {
     en: "Dirt Rally 1/2",
     cn: "尘埃拉力系列 Dirt Rally 1/2",
-    unit: "°",
-    type: "vfov-degx2",
+    unit: "",
+    type: "vfov-dirtrally",
     digits: 0,
   },
   gridautosport: {
@@ -99,6 +99,13 @@ export const GameList = {
     unit: "°",
     type: "vfov-deg",
     digits: 1,
+  },
+  assettocorsarally: {
+    en: "Assetto Corsa Rally",
+    cn: "神力科莎拉力/AC拉力",
+    unit: "°",
+    type: "hfov-deg",
+    digits: 0,
   },
   isiengine: {
     en: "rFactor, Game Stock Car",

@@ -5,6 +5,11 @@ import { GameList } from "./games";
 interface GameTranslation {
   en: string;
   cn: string;
+  it?: string;
+  de?: string;
+  es?: string;
+  fr?: string;
+  ja?: string;
 }
 
 // 将 GameList 转换为 i18n 格式
@@ -68,6 +73,121 @@ i18n
           search_games: "搜索游戏...",
           ...Object.entries(gameTranslations).reduce((acc, [key, value]) => {
             return { ...acc, [key]: value.cn };
+          }, {}),
+        },
+      },
+      it: {
+        translation: {
+          curvature: "Curvatura",
+          flat: "Piatto",
+          tripleMonitor: "Triplo Monitor",
+          singleMonitor: "Monitor Singolo",
+          tripleMonitorAngle: "Angolo Triplo Monitor",
+          angle: "angolo",
+          distanceToScreen: "Distanza dallo Schermo (cm)",
+          screenSize: "Dimensione Schermo (pollici)",
+          inch: "pollici",
+          aspectRatio: "Rapporto d'Aspetto",
+          verticalFov: "FOV Verticale",
+          horizontalFov: "FOV Orizzontale",
+          export_canvas: "Esporta",
+          custom: "Personalizzato",
+          back: "Indietro",
+          search_games: "Cerca giochi...",
+          ...Object.entries(gameTranslations).reduce((acc, [key, value]) => {
+            return { ...acc, [key]: value.en };
+          }, {}),
+        },
+      },
+      de: {
+        translation: {
+          curvature: "Krümmung",
+          flat: "Flach",
+          tripleMonitor: "Dreifach-Monitor",
+          singleMonitor: "Einzelmonitor",
+          tripleMonitorAngle: "Dreifach-Monitor-Winkel",
+          angle: "Winkel",
+          distanceToScreen: "Abstand zum Bildschirm (cm)",
+          screenSize: "Bildschirmgröße (Zoll)",
+          inch: "Zoll",
+          aspectRatio: "Seitenverhältnis",
+          verticalFov: "Vertikales FOV",
+          horizontalFov: "Horizontales FOV",
+          export_canvas: "Exportieren",
+          custom: "Benutzerdefiniert",
+          back: "Zurück",
+          search_games: "Spiele suchen...",
+          ...Object.entries(gameTranslations).reduce((acc, [key, value]) => {
+            return { ...acc, [key]: value.en };
+          }, {}),
+        },
+      },
+      es: {
+        translation: {
+          curvature: "Curvatura",
+          flat: "Plano",
+          tripleMonitor: "Triple Monitor",
+          singleMonitor: "Monitor Individual",
+          tripleMonitorAngle: "Ángulo de Triple Monitor",
+          angle: "ángulo",
+          distanceToScreen: "Distancia a la Pantalla (cm)",
+          screenSize: "Tamaño de Pantalla (pulgadas)",
+          inch: "pulgadas",
+          aspectRatio: "Relación de Aspecto",
+          verticalFov: "FOV Vertical",
+          horizontalFov: "FOV Horizontal",
+          export_canvas: "Exportar",
+          custom: "Personalizado",
+          back: "Volver",
+          search_games: "Buscar juegos...",
+          ...Object.entries(gameTranslations).reduce((acc, [key, value]) => {
+            return { ...acc, [key]: value.en };
+          }, {}),
+        },
+      },
+      fr: {
+        translation: {
+          curvature: "Courbure",
+          flat: "Plat",
+          tripleMonitor: "Triple Moniteur",
+          singleMonitor: "Moniteur Simple",
+          tripleMonitorAngle: "Angle Triple Moniteur",
+          angle: "angle",
+          distanceToScreen: "Distance à l'Écran (cm)",
+          screenSize: "Taille de l'Écran (pouces)",
+          inch: "pouces",
+          aspectRatio: "Rapport d'Aspect",
+          verticalFov: "FOV Vertical",
+          horizontalFov: "FOV Horizontal",
+          export_canvas: "Exporter",
+          custom: "Personnalisé",
+          back: "Retour",
+          search_games: "Rechercher des jeux...",
+          ...Object.entries(gameTranslations).reduce((acc, [key, value]) => {
+            return { ...acc, [key]: value.en };
+          }, {}),
+        },
+      },
+      ja: {
+        translation: {
+          curvature: "曲率",
+          flat: "平面",
+          tripleMonitor: "トリプルモニター",
+          singleMonitor: "シングルモニター",
+          tripleMonitorAngle: "トリプルモニター角度",
+          angle: "角度",
+          distanceToScreen: "画面までの距離 (cm)",
+          screenSize: "画面サイズ (インチ)",
+          inch: "インチ",
+          aspectRatio: "アスペクト比",
+          verticalFov: "垂直FOV",
+          horizontalFov: "水平FOV",
+          export_canvas: "エクスポート",
+          custom: "カスタム",
+          back: "戻る",
+          search_games: "ゲームを検索...",
+          ...Object.entries(gameTranslations).reduce((acc, [key, value]) => {
+            return { ...acc, [key]: value.en };
           }, {}),
         },
       },

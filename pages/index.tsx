@@ -424,7 +424,24 @@ const Home: NextPage = () => {
 
   const { t } = useTranslation();
 
-  const [language, setLanguage] = useStickyState(navigator.language === "zh-CN" ? "cn" : "en", "language");
+  // 根据浏览器语言自动选择最合适的语言
+  const detectBrowserLanguage = (): string => {
+    const browserLang = navigator.language.toLowerCase();
+
+    // 精确匹配
+    if (browserLang === 'zh-cn' || browserLang === 'zh') return 'cn';
+    if (browserLang === 'en' || browserLang.startsWith('en-')) return 'en';
+    if (browserLang === 'it' || browserLang.startsWith('it-')) return 'it';
+    if (browserLang === 'de' || browserLang.startsWith('de-')) return 'de';
+    if (browserLang === 'es' || browserLang.startsWith('es-')) return 'es';
+    if (browserLang === 'fr' || browserLang.startsWith('fr-')) return 'fr';
+    if (browserLang === 'ja' || browserLang.startsWith('ja-')) return 'ja';
+
+    // 默认返回英语
+    return 'en';
+  };
+
+  const [language, setLanguage] = useStickyState(detectBrowserLanguage(), "language");
 
   const [distanceToScreen, setDistanceToScreen] = useStickyState(70, "distanceToScreen");
   const [screenSize, setScreenSize] = useStickyState(32, "screenSize");
@@ -573,7 +590,9 @@ const Home: NextPage = () => {
           case "vfov-race07":
             fovValue = Math.max(Math.min(1.5, (verticalAngleNum / 58)), 0.4).toFixed(gameInfo.digits);
             break;
-
+          case "vfov-dirtrally":
+            fovValue = Math.ceil((Math.min(70, Math.max(30, verticalAngleNum)) - 30) / 5);
+            break;
         }
 
         newGameFovs[gameKey] = fovValue;
@@ -630,6 +649,11 @@ const Home: NextPage = () => {
               [
                 { value: "en", label: "English" },
                 { value: "cn", label: "中文" },
+                { value: "it", label: "Italiano" },
+                { value: "de", label: "Deutsch" },
+                { value: "es", label: "Español" },
+                { value: "fr", label: "Français" },
+                { value: "ja", label: "日本語" },
               ]
             }
             defaultValue={[language]}
@@ -699,35 +723,95 @@ const Home: NextPage = () => {
             </Form.Item>
 
             <Form.Item label={`${t("tripleMonitorAngle")}: ${tripleMonitorAngle}`}>
-              <Slider
-                disabled={!isTripleMonitor}
-                value={tripleMonitorAngle}
-                min={0}
-                max={90}
-                popover
-                onChange={(e) => setTripleMonitorAngle(e as number)}
-              />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Button
+                  disabled={!isTripleMonitor || tripleMonitorAngle <= 0}
+                  size="small"
+                  fill="outline"
+                  onClick={() => setTripleMonitorAngle(Math.max(0, tripleMonitorAngle - 1))}
+                >
+                  -
+                </Button>
+                <div style={{ flex: 1 }}>
+                  <Slider
+                    disabled={!isTripleMonitor}
+                    value={tripleMonitorAngle}
+                    min={0}
+                    max={90}
+                    popover
+                    onChange={(e) => setTripleMonitorAngle(e as number)}
+                  />
+                </div>
+                <Button
+                  disabled={!isTripleMonitor || tripleMonitorAngle >= 90}
+                  size="small"
+                  fill="outline"
+                  onClick={() => setTripleMonitorAngle(Math.min(90, tripleMonitorAngle + 1))}
+                >
+                  +
+                </Button>
+              </div>
             </Form.Item>
 
             <Form.Item label={`${t("distanceToScreen")}: ${distanceToScreen} ${t("cm")}`}>
               {/* <Input type="number" value={`${distanceToScreen}`} onChange={(e) => setDistanceToScreen(parseInt(e))} /> */}
-              <Slider
-                value={distanceToScreen}
-                min={40}
-                max={200}
-                popover
-                onChange={(e) => setDistanceToScreen(e as number)}
-              />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Button
+                  disabled={distanceToScreen <= 40}
+                  size="small"
+                  fill="outline"
+                  onClick={() => setDistanceToScreen(Math.max(40, distanceToScreen - 1))}
+                >
+                  -
+                </Button>
+                <div style={{ flex: 1 }}>
+                  <Slider
+                    value={distanceToScreen}
+                    min={40}
+                    max={200}
+                    popover
+                    onChange={(e) => setDistanceToScreen(e as number)}
+                  />
+                </div>
+                <Button
+                  disabled={distanceToScreen >= 200}
+                  size="small"
+                  fill="outline"
+                  onClick={() => setDistanceToScreen(Math.min(200, distanceToScreen + 1))}
+                >
+                  +
+                </Button>
+              </div>
             </Form.Item>
             <Form.Item label={`${t("screenSize")}: ${screenSize} ${t("inch")}`}>
               {/* <Input type="number" value={screenSize} onChange={setScreenSize} /> */}
-              <Slider
-                value={screenSize}
-                min={5}
-                max={110}
-                popover
-                onChange={(e) => setScreenSize(e as number)}
-              />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <Button
+                  disabled={screenSize <= 5}
+                  size="small"
+                  fill="outline"
+                  onClick={() => setScreenSize(Math.max(5, screenSize - 1))}
+                >
+                  -
+                </Button>
+                <div style={{ flex: 1 }}>
+                  <Slider
+                    value={screenSize}
+                    min={5}
+                    max={110}
+                    popover
+                    onChange={(e) => setScreenSize(e as number)}
+                  />
+                </div>
+                <Button
+                  disabled={screenSize >= 110}
+                  size="small"
+                  fill="outline"
+                  onClick={() => setScreenSize(Math.min(110, screenSize + 1))}
+                >
+                  +
+                </Button>
+              </div>
             </Form.Item>
 
             <div style={{ height: 88 }}>
