@@ -635,9 +635,74 @@ const Home: NextPage = () => {
   return (
     <div className={styles.container}>
       <Head>
-        <title>fov calculator</title>
-        <meta name="description" content="sim racing cockpit fov calculator" />
+        <title>FOV Calculator - Sim Racing Field of View Calculator for Single & Triple Monitor Setup</title>
+        <meta name="description" content="Free FOV calculator for sim racing cockpits. Calculate optimal field of view for single monitor, triple monitor, curved & flat screens. Supports iRacing, Assetto Corsa, ACC, F1, and 50+ racing games." />
+        <meta name="keywords" content="FOV calculator, field of view calculator, sim racing FOV, triple monitor FOV, curved monitor FOV, iRacing FOV, Assetto Corsa FOV, ACC FOV, racing simulator FOV, cockpit FOV, display FOV" />
+        <meta name="author" content="nicholasxuu" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link rel="icon" href="/favicon.ico" />
+        <link rel="canonical" href="https://fovcalc.xusf.xyz/" />
+
+        {/* Open Graph / Facebook */}
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://fovcalc.xusf.xyz/" />
+        <meta property="og:title" content="FOV Calculator - Sim Racing Field of View Calculator" />
+        <meta property="og:description" content="Free FOV calculator for sim racing cockpits. Calculate optimal field of view for single monitor, triple monitor, curved & flat screens. Supports 50+ racing games." />
+        <meta property="og:image" content="https://fovcalc.xusf.xyz/assets/images/brz_top.jpg" />
+        <meta property="og:locale" content={language === 'cn' ? 'zh_CN' : language === 'ja' ? 'ja_JP' : language === 'de' ? 'de_DE' : language === 'es' ? 'es_ES' : language === 'fr' ? 'fr_FR' : language === 'it' ? 'it_IT' : 'en_US'} />
+
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:url" content="https://fovcalc.xusf.xyz/" />
+        <meta name="twitter:title" content="FOV Calculator - Sim Racing Field of View Calculator" />
+        <meta name="twitter:description" content="Free FOV calculator for sim racing cockpits. Calculate optimal field of view for single monitor, triple monitor, curved & flat screens." />
+        <meta name="twitter:image" content="https://fovcalc.xusf.xyz/assets/images/brz_top.jpg" />
+
+        {/* Additional SEO tags */}
+        <meta name="robots" content="index, follow" />
+        <meta name="googlebot" content="index, follow" />
+        <meta name="language" content={language === 'cn' ? 'Chinese' : language === 'ja' ? 'Japanese' : language === 'de' ? 'German' : language === 'es' ? 'Spanish' : language === 'fr' ? 'French' : language === 'it' ? 'Italian' : 'English'} />
+        <meta httpEquiv="Content-Language" content={language === 'cn' ? 'zh-CN' : language === 'ja' ? 'ja' : language === 'de' ? 'de' : language === 'es' ? 'es' : language === 'fr' ? 'fr' : language === 'it' ? 'it' : 'en'} />
+
+        {/* JSON-LD Structured Data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "WebApplication",
+              "name": "FOV Calculator",
+              "applicationCategory": "UtilityApplication",
+              "operatingSystem": "Any",
+              "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "USD"
+              },
+              "description": "Free field of view calculator for sim racing cockpits. Supports single monitor, triple monitor, curved and flat screens. Calculate optimal FOV for iRacing, Assetto Corsa, ACC, F1, and 50+ racing games.",
+              "url": "https://fovcalc.xusf.xyz/",
+              "author": {
+                "@type": "Person",
+                "name": "nicholasxuu",
+                "url": "https://github.com/nicholasxuu/"
+              },
+              "screenshot": "https://fovcalc.xusf.xyz/assets/images/brz_top.jpg",
+              "featureList": [
+                "Single Monitor FOV Calculation",
+                "Triple Monitor FOV Calculation",
+                "Curved Monitor Support",
+                "Flat Monitor Support",
+                "50+ Racing Games Support",
+                "Visual FOV Preview",
+                "Multiple Aspect Ratios",
+                "Custom Screen Configurations",
+                "Export Results as Image",
+                "Multi-language Support (English, Chinese, Italian, German, Spanish, French, Japanese)"
+              ],
+              "keywords": "FOV calculator, field of view, sim racing, triple monitor, curved monitor, iRacing, Assetto Corsa, ACC, racing simulator"
+            })
+          }}
+        />
       </Head>
 
       <GoogleAnalytics gaId="G-GN8YEE6FBQ" />
