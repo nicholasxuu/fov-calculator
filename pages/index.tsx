@@ -977,7 +977,7 @@ const Home: NextPage = () => {
       </main >
 
       <footer className={styles.footer}>
-        Made in China, By <a href="https://github.com/nicholasxuu/">nicholasxuu</a>
+        By <a href="https://github.com/nicholasxuu/">sanfen</a>
       </footer>
     </div >
   )
