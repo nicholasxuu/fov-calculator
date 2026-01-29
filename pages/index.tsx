@@ -453,6 +453,7 @@ const Home: NextPage = () => {
   const [showCustomAspectRatioInput, setShowCustomAspectRatioInput] = useState(false);
   const [showCustomCurvatureInput, setShowCustomCurvatureInput] = useState(false);
   const [searchText, setSearchText] = useState("");
+  const [gt7Mode, setGt7Mode] = useStickyState(false, "gt7Mode");
 
   const [gameFovs, setGameFovs] = useState<Record<string, string | number>>(() => {
     const initialFovs: Record<string, string | number> = {
@@ -474,6 +475,54 @@ const Home: NextPage = () => {
 
   useEffect(() => {
   }, [])
+
+  // 当锁定 vFOV 时，自动调整 distanceToScreen
+  // GT7 车内视角模式：自动调整 distanceToScreen 以达到 55° vFOV
+  useEffect(() => {
+    if (!gt7Mode) return;
+
+    const targetVFov = 55; // GT7 车内视角固定为 55°
+    const aspectRatio = aspectRatioA / aspectRatioB;
+    const monitorInfo = getMonitor(screenSize, aspectRatio, curvature);
+
+    // 使用二分查找来找到合适的距离
+    let minDistance = 30;
+    let maxDistance = 200;
+    let bestDistance = distanceToScreen;
+    let minDiff = Infinity;
+
+    for (let i = 0; i < 50; i++) {
+      const testDistance = (minDistance + maxDistance) / 2;
+      const displayPos = calculateDisplayXYPos(testDistance, monitorInfo, tripleMonitorAngle);
+      const verticalAngleNum = calcAngleNum(
+        headPositions.x + xOffset,
+        headPositions.sy,
+        displayPos.sideMonX,
+        displayPos.monSY,
+        displayPos.sideMonX,
+        displayPos.monSY + monitorInfo.h
+      );
+
+      const diff = Math.abs(verticalAngleNum - targetVFov);
+      if (diff < minDiff) {
+        minDiff = diff;
+        bestDistance = testDistance;
+      }
+
+      if (verticalAngleNum > targetVFov) {
+        minDistance = testDistance;
+      } else {
+        maxDistance = testDistance;
+      }
+
+      if (diff < 0.1) break;
+    }
+
+    if (Math.abs(bestDistance - distanceToScreen) > 0.5) {
+      setDistanceToScreen(Math.round(bestDistance));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gt7Mode, screenSize, aspectRatioA, aspectRatioB, curvature, tripleMonitorAngle])
 
   useEffect(() => {
     const drawCanvas = async () => {
@@ -818,11 +867,11 @@ const Home: NextPage = () => {
               </div>
             </Form.Item>
 
-            <Form.Item label={`${t("distanceToScreen")}: ${distanceToScreen} ${t("cm")}`}>
+            <Form.Item label={`${t("distanceToScreen")}: ${distanceToScreen} ${t("cm")}${gt7Mode ? ` (${t("autoAdjusted")})` : ''}`}>
               {/* <Input type="number" value={`${distanceToScreen}`} onChange={(e) => setDistanceToScreen(parseInt(e))} /> */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Button
-                  disabled={distanceToScreen <= 40}
+                  disabled={gt7Mode || distanceToScreen <= 40}
                   size="small"
                   fill="outline"
                   onClick={() => setDistanceToScreen(Math.max(40, distanceToScreen - 1))}
@@ -831,6 +880,7 @@ const Home: NextPage = () => {
                 </Button>
                 <div style={{ flex: 1 }}>
                   <Slider
+                    disabled={gt7Mode}
                     value={distanceToScreen}
                     min={40}
                     max={200}
@@ -839,7 +889,7 @@ const Home: NextPage = () => {
                   />
                 </div>
                 <Button
-                  disabled={distanceToScreen >= 200}
+                  disabled={gt7Mode || distanceToScreen >= 200}
                   size="small"
                   fill="outline"
                   onClick={() => setDistanceToScreen(Math.min(200, distanceToScreen + 1))}
@@ -970,6 +1020,18 @@ const Home: NextPage = () => {
                 </Form.Item>
               )}
             </div>
+
+            <Form.Item label={t("specialMode")}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <input
+                  type="checkbox"
+                  checked={gt7Mode}
+                  onChange={(e) => setGt7Mode(e.target.checked)}
+                  style={{ width: '20px', height: '20px', cursor: 'pointer' }}
+                />
+                <span>{t("gt7CockpitMode")}</span>
+              </div>
+            </Form.Item>
 
           </Form>
 

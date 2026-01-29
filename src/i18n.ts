@@ -13,15 +13,18 @@ interface GameTranslation {
 }
 
 // 将 GameList 转换为 i18n 格式
-const gameTranslations = Object.entries(GameList).reduce((acc, [key, value]) => {
-  return {
-    ...acc,
-    [`game_${key}`]: {
-      en: value.en,
-      cn: value.cn,
-    },
-  };
-}, {} as Record<string, GameTranslation>);
+const gameTranslations = Object.entries(GameList).reduce(
+  (acc, [key, value]) => {
+    return {
+      ...acc,
+      [`game_${key}`]: {
+        en: value.en,
+        cn: value.cn,
+      },
+    };
+  },
+  {} as Record<string, GameTranslation>,
+);
 
 i18n
   .use(initReactI18next) // passes i18n down to react-i18next
@@ -48,6 +51,11 @@ i18n
           custom: "Custom",
           back: "Back",
           search_games: "Search games...",
+          gt7CockpitMode: "GT7 Cockpit View Mode",
+          specialMode: "Special Mode",
+          enabled: "Enabled",
+          disabled: "Disabled",
+          autoAdjusted: "Auto-adjusted",
           ...Object.entries(gameTranslations).reduce((acc, [key, value]) => {
             return { ...acc, [key]: value.en };
           }, {}),
@@ -71,6 +79,11 @@ i18n
           custom: "自定义",
           back: "返回",
           search_games: "搜索游戏...",
+          gt7CockpitMode: "GT7车内视角模式",
+          specialMode: "特殊模式",
+          enabled: "已启用",
+          disabled: "已禁用",
+          autoAdjusted: "自动调整",
           ...Object.entries(gameTranslations).reduce((acc, [key, value]) => {
             return { ...acc, [key]: value.cn };
           }, {}),
@@ -94,6 +107,11 @@ i18n
           custom: "Personalizzato",
           back: "Indietro",
           search_games: "Cerca giochi...",
+          gt7CockpitMode: "Modalità Abitacolo GT7",
+          specialMode: "Modalità Speciale",
+          enabled: "Abilitato",
+          disabled: "Disabilitato",
+          autoAdjusted: "Regolato automaticamente",
           ...Object.entries(gameTranslations).reduce((acc, [key, value]) => {
             return { ...acc, [key]: value.en };
           }, {}),
@@ -117,6 +135,11 @@ i18n
           custom: "Benutzerdefiniert",
           back: "Zurück",
           search_games: "Spiele suchen...",
+          gt7CockpitMode: "GT7 Cockpit-Ansichtsmodus",
+          specialMode: "Spezialmodus",
+          enabled: "Aktiviert",
+          disabled: "Deaktiviert",
+          autoAdjusted: "Automatisch angepasst",
           ...Object.entries(gameTranslations).reduce((acc, [key, value]) => {
             return { ...acc, [key]: value.en };
           }, {}),
@@ -140,6 +163,11 @@ i18n
           custom: "Personalizado",
           back: "Volver",
           search_games: "Buscar juegos...",
+          gt7CockpitMode: "Modo Vista Cabina GT7",
+          specialMode: "Modo Especial",
+          enabled: "Habilitado",
+          disabled: "Deshabilitado",
+          autoAdjusted: "Ajustado automáticamente",
           ...Object.entries(gameTranslations).reduce((acc, [key, value]) => {
             return { ...acc, [key]: value.en };
           }, {}),
@@ -163,6 +191,11 @@ i18n
           custom: "Personnalisé",
           back: "Retour",
           search_games: "Rechercher des jeux...",
+          gt7CockpitMode: "Mode Vue Cockpit GT7",
+          specialMode: "Mode Spécial",
+          enabled: "Activé",
+          disabled: "Désactivé",
+          autoAdjusted: "Ajusté automatiquement",
           ...Object.entries(gameTranslations).reduce((acc, [key, value]) => {
             return { ...acc, [key]: value.en };
           }, {}),
@@ -186,6 +219,11 @@ i18n
           custom: "カスタム",
           back: "戻る",
           search_games: "ゲームを検索...",
+          gt7CockpitMode: "GT7コックピットビューモード",
+          specialMode: "特殊モード",
+          enabled: "有効",
+          disabled: "無効",
+          autoAdjusted: "自動調整",
           ...Object.entries(gameTranslations).reduce((acc, [key, value]) => {
             return { ...acc, [key]: value.en };
           }, {}),
