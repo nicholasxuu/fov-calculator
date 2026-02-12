@@ -424,6 +424,45 @@ const Home: NextPage = () => {
 
   const { t } = useTranslation();
 
+  // 非线性滑块转换函数
+  // 实际值范围: 10-400
+  // 滑块值范围: 0-100
+  // 10-50 占据滑块的 0-10 (10%)
+  // 50-100 占据滑块的 10-70 (60%)
+  // 100-200 占据滑块的 70-90 (20%)
+  // 200-400 占据滑块的 90-100 (10%)
+  const distanceToSliderValue = (distance: number): number => {
+    if (distance <= 50) {
+      // 10-50 映射到 0-10
+      return ((distance - 10) / (50 - 10)) * 10;
+    } else if (distance <= 100) {
+      // 50-100 映射到 10-70
+      return 10 + ((distance - 50) / (100 - 50)) * 60;
+    } else if (distance <= 200) {
+      // 100-200 映射到 70-90
+      return 70 + ((distance - 100) / (200 - 100)) * 20;
+    } else {
+      // 200-400 映射到 90-100
+      return 90 + ((distance - 200) / (400 - 200)) * 10;
+    }
+  };
+
+  const sliderValueToDistance = (sliderValue: number): number => {
+    if (sliderValue <= 10) {
+      // 0-10 映射到 10-50
+      return 10 + (sliderValue / 10) * (50 - 10);
+    } else if (sliderValue <= 70) {
+      // 10-70 映射到 50-100
+      return 50 + ((sliderValue - 10) / 60) * (100 - 50);
+    } else if (sliderValue <= 90) {
+      // 70-90 映射到 100-200
+      return 100 + ((sliderValue - 70) / 20) * (200 - 100);
+    } else {
+      // 90-100 映射到 200-400
+      return 200 + ((sliderValue - 90) / 10) * (400 - 200);
+    }
+  };
+
   // 根据浏览器语言自动选择最合适的语言
   const detectBrowserLanguage = (): string => {
     const browserLang = navigator.language.toLowerCase();
@@ -486,8 +525,8 @@ const Home: NextPage = () => {
     const monitorInfo = getMonitor(screenSize, aspectRatio, curvature);
 
     // 使用二分查找来找到合适的距离
-    let minDistance = 30;
-    let maxDistance = 200;
+    let minDistance = 10;
+    let maxDistance = 400;
     let bestDistance = distanceToScreen;
     let minDiff = Infinity;
 
@@ -871,28 +910,28 @@ const Home: NextPage = () => {
               {/* <Input type="number" value={`${distanceToScreen}`} onChange={(e) => setDistanceToScreen(parseInt(e))} /> */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Button
-                  disabled={gt7Mode || distanceToScreen <= 40}
+                  disabled={gt7Mode || distanceToScreen <= 10}
                   size="small"
                   fill="outline"
-                  onClick={() => setDistanceToScreen(Math.max(40, distanceToScreen - 1))}
+                  onClick={() => setDistanceToScreen(Math.max(10, distanceToScreen - 1))}
                 >
                   -
                 </Button>
                 <div style={{ flex: 1 }}>
                   <Slider
                     disabled={gt7Mode}
-                    value={distanceToScreen}
-                    min={40}
-                    max={200}
-                    popover
-                    onChange={(e) => setDistanceToScreen(e as number)}
+                    value={distanceToSliderValue(distanceToScreen)}
+                    min={0}
+                    max={100}
+                    popover={(value) => `${Math.round(sliderValueToDistance(value))} cm`}
+                    onChange={(e) => setDistanceToScreen(Math.round(sliderValueToDistance(e as number)))}
                   />
                 </div>
                 <Button
-                  disabled={gt7Mode || distanceToScreen >= 200}
+                  disabled={gt7Mode || distanceToScreen >= 400}
                   size="small"
                   fill="outline"
-                  onClick={() => setDistanceToScreen(Math.min(200, distanceToScreen + 1))}
+                  onClick={() => setDistanceToScreen(Math.min(400, distanceToScreen + 1))}
                 >
                   +
                 </Button>
