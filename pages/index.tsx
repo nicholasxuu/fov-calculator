@@ -1108,9 +1108,11 @@ const Home: NextPage = () => {
         {/* Open Graph / Facebook */}
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://fovcalc.xusf.xyz/" />
+        <meta property="og:site_name" content="FOV Calculator" />
         <meta property="og:title" content="FOV Calculator - Sim Racing Field of View Calculator" />
         <meta property="og:description" content="Free FOV calculator for sim racing cockpits. Calculate optimal field of view for single monitor, triple monitor, curved & flat screens. Supports 50+ racing games." />
         <meta property="og:image" content="https://fovcalc.xusf.xyz/assets/images/brz_top.jpg" />
+        <meta property="og:image:alt" content="Sim racing cockpit FOV calculator showing top and side view of a car with monitor placement visualization" />
         <meta property="og:locale" content={language === 'cn' ? 'zh_CN' : language === 'ja' ? 'ja_JP' : language === 'de' ? 'de_DE' : language === 'es' ? 'es_ES' : language === 'fr' ? 'fr_FR' : language === 'it' ? 'it_IT' : 'en_US'} />
 
         {/* Twitter */}
@@ -1125,6 +1127,16 @@ const Home: NextPage = () => {
         <meta name="googlebot" content="index, follow" />
         <meta name="language" content={language === 'cn' ? 'Chinese' : language === 'ja' ? 'Japanese' : language === 'de' ? 'German' : language === 'es' ? 'Spanish' : language === 'fr' ? 'French' : language === 'it' ? 'Italian' : 'English'} />
         <meta httpEquiv="Content-Language" content={language === 'cn' ? 'zh-CN' : language === 'ja' ? 'ja' : language === 'de' ? 'de' : language === 'es' ? 'es' : language === 'fr' ? 'fr' : language === 'it' ? 'it' : 'en'} />
+
+        {/* Hreflang alternate links */}
+        <link rel="alternate" hrefLang="x-default" href="https://fovcalc.xusf.xyz/" />
+        <link rel="alternate" hrefLang="en" href="https://fovcalc.xusf.xyz/?lang=en" />
+        <link rel="alternate" hrefLang="zh-CN" href="https://fovcalc.xusf.xyz/?lang=cn" />
+        <link rel="alternate" hrefLang="it" href="https://fovcalc.xusf.xyz/?lang=it" />
+        <link rel="alternate" hrefLang="de" href="https://fovcalc.xusf.xyz/?lang=de" />
+        <link rel="alternate" hrefLang="es" href="https://fovcalc.xusf.xyz/?lang=es" />
+        <link rel="alternate" hrefLang="fr" href="https://fovcalc.xusf.xyz/?lang=fr" />
+        <link rel="alternate" hrefLang="ja" href="https://fovcalc.xusf.xyz/?lang=ja" />
 
         {/* JSON-LD Structured Data */}
         <script
@@ -1162,6 +1174,59 @@ const Home: NextPage = () => {
                 "Multi-language Support (English, Chinese, Italian, German, Spanish, French, Japanese)"
               ],
               "keywords": "FOV calculator, field of view, sim racing, triple monitor, curved monitor, iRacing, Assetto Corsa, ACC, racing simulator"
+            })
+          }}
+        />
+
+        {/* FAQ Structured Data */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "FAQPage",
+              "mainEntity": [
+                {
+                  "@type": "Question",
+                  "name": "What is the correct FOV for sim racing?",
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "The correct FOV depends on your screen size, screen distance, and monitor configuration. Mathematically correct FOV is calculated using: FOV = 2 × arctan(screen_width / (2 × eye_distance)). This tool calculates the exact value for your setup automatically."
+                  }
+                },
+                {
+                  "@type": "Question",
+                  "name": "How do I calculate FOV for triple monitors in sim racing?",
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "For triple monitors, you need to set the angle between your side monitors and the center monitor. Enter your screen size, distance to screen, aspect ratio, and the angle of your side monitors in the calculator. The tool will compute the correct horizontal and vertical FOV values for your game."
+                  }
+                },
+                {
+                  "@type": "Question",
+                  "name": "What is the difference between horizontal FOV and vertical FOV?",
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Horizontal FOV (HFOV) is the angle of your field of view from left to right, while vertical FOV (VFOV) is the angle from top to bottom. Most racing games accept one or the other — some like iRacing use VFOV, others use HFOV. This calculator provides both values for any screen configuration."
+                  }
+                },
+                {
+                  "@type": "Question",
+                  "name": "Does the distance to my screen affect FOV settings?",
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "Yes, distance to screen is one of the most important factors. The further you sit from your screen, the smaller your FOV should be to maintain correct perspective. Moving your seat closer requires a higher FOV value. Use this calculator and adjust the distance slider to find the optimal FOV for your seat position."
+                  }
+                },
+                {
+                  "@type": "Question",
+                  "name": "Which racing games does this FOV calculator support?",
+                  "acceptedAnswer": {
+                    "@type": "Answer",
+                    "text": "This FOV calculator supports 50+ sim racing games including iRacing, Assetto Corsa, Assetto Corsa Competizione (ACC), Gran Turismo 7 (GT7), F1 series, rFactor 2, Automobilista 2, and many more. It includes a special GT7 Cockpit View mode that accounts for GT7's fixed 55° vertical FOV."
+                  }
+                }
+              ]
             })
           }}
         />

@@ -3,9 +3,10 @@
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://fovcalc.xusf.xyz/</loc>
-    <lastmod>2026-01-22</lastmod>
+    <lastmod>2026-03-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://fovcalc.xusf.xyz/"/>
     <xhtml:link rel="alternate" hreflang="en" href="https://fovcalc.xusf.xyz/?lang=en"/>
     <xhtml:link rel="alternate" hreflang="zh-CN" href="https://fovcalc.xusf.xyz/?lang=cn"/>
     <xhtml:link rel="alternate" hreflang="it" href="https://fovcalc.xusf.xyz/?lang=it"/>
