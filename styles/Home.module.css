@@ -7,11 +7,74 @@
 
 .header {
   display: flex;
-  flex: 1;
-  padding: 1rem 0;
+  padding: 1rem;
   border-bottom: 1px solid #eaeaea;
+  align-items: center;
+  gap: 1rem;
+}
+
+.headerLanguage {
+  flex: 1 1 auto;
+  display: flex;
   justify-content: center;
-  align-items: flex-end;
+  min-width: 0;
+}
+
+/* 7 language options → default is columns={4} = 2 rows.
+   When the header has enough room, collapse to a single row of 7.
+   antd-mobile's Grid sets --columns inline, so override grid-template-columns
+   directly (inline styles only set the var; this rule wins on specificity). */
+@media (min-width: 650px) {
+  .headerLanguage :global(.adm-selector) {
+    --padding: 4px 8px;
+    --gap: 4px;
+  }
+  .headerLanguage :global(.adm-grid) {
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+  }
+}
+
+.headerActions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 600px) {
+  .header {
+    align-items: stretch;
+    padding: 0.5rem;
+    gap: 0.5rem;
+  }
+
+  .headerLanguage {
+    flex: 3 1 0;
+    min-width: 0;
+    justify-content: flex-start;
+    align-self: center;
+  }
+
+  .headerActions {
+    flex: 1 1 0;
+    flex-direction: column;
+    max-width: 25%;
+    gap: 4px;
+  }
+
+  .headerActions > button {
+    width: 100%;
+    font-size: clamp(10px, 2.8vw, 13px);
+    padding: 4px 6px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .headerLanguage :global(.adm-selector) {
+    --padding: 4px 8px;
+    --gap: 4px;
+    font-size: clamp(10px, 2.8vw, 13px);
+  }
 }
 
 .body {

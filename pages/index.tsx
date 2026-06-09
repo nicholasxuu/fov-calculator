@@ -3,7 +3,7 @@ import dynamic from 'next/dynamic'
 import type { NextPage } from 'next'
 import Head from 'next/head'
 import { useEffect, useState, useRef } from 'react'
-import { Selector, Form, Slider, Button, Input } from 'antd-mobile';
+import { Selector, Form, Slider, Button, Input, Toast } from 'antd-mobile';
 import { GoogleAnalytics } from '@next/third-parties/google'
 
 
@@ -12,8 +12,9 @@ import i18n from '../src/i18n';
 import styles from '../styles/Home.module.css'
 import { t } from 'i18next';
 import React from 'react';
-import { useStickyState } from '../utils/useStickyState';
+import { useStickyState, setFreezeStickyWrites } from '../utils/useStickyState';
 import { GameList } from '../src/games';
+import { parseShareUrl, syncQueryToConfig } from '../utils/shareUrl';
 
 
 // ===== 画布和显示相关常量 =====
@@ -815,19 +816,30 @@ const Home: NextPage = () => {
     return 'en';
   };
 
-  const [language, setLanguage] = useStickyState(detectBrowserLanguage(), "language");
+  // Parse share-URL params once on first render. If any are present, freeze
+  // localStorage writes for this session so the share link does not pollute
+  // the visitor's saved config.
+  const urlConfig = React.useMemo(() => {
+    const cfg = parseShareUrl(window.location.search);
+    if (Object.keys(cfg).length > 0) {
+      setFreezeStickyWrites(true);
+    }
+    return cfg;
+  }, []);
 
-  const [distanceToScreen, setDistanceToScreen] = useStickyState(70, "distanceToScreen");
-  const [screenSize, setScreenSize] = useStickyState(32, "screenSize");
-  const [aspectRatioA, setAspectRatioA] = useStickyState(16, "aspectRatioA");
-  const [aspectRatioB, setAspectRatioB] = useStickyState(9, "aspectRatioB");
-  const [curvature, setCurvature] = useStickyState(0, "curvature")
-  const [isTripleMonitor, setIsTripleMonitor] = useStickyState(true, "isTripleMonitor")
-  const [tripleMonitorAngle, setTripleMonitorAngle] = useStickyState(60, "tripleMonitorAngle");
+  const [language, setLanguage] = useStickyState(detectBrowserLanguage(), "language", urlConfig.language);
+
+  const [distanceToScreen, setDistanceToScreen] = useStickyState(70, "distanceToScreen", urlConfig.distanceToScreen);
+  const [screenSize, setScreenSize] = useStickyState(32, "screenSize", urlConfig.screenSize);
+  const [aspectRatioA, setAspectRatioA] = useStickyState(16, "aspectRatioA", urlConfig.aspectRatioA);
+  const [aspectRatioB, setAspectRatioB] = useStickyState(9, "aspectRatioB", urlConfig.aspectRatioB);
+  const [curvature, setCurvature] = useStickyState(0, "curvature", urlConfig.curvature)
+  const [isTripleMonitor, setIsTripleMonitor] = useStickyState(true, "isTripleMonitor", urlConfig.isTripleMonitor)
+  const [tripleMonitorAngle, setTripleMonitorAngle] = useStickyState(60, "tripleMonitorAngle", urlConfig.tripleMonitorAngle);
   const [showCustomAspectRatioInput, setShowCustomAspectRatioInput] = useState(false);
   const [showCustomCurvatureInput, setShowCustomCurvatureInput] = useState(false);
   const [searchText, setSearchText] = useState("");
-  const [gt7Mode, setGt7Mode] = useStickyState(false, "gt7Mode");
+  const [gt7Mode, setGt7Mode] = useStickyState(false, "gt7Mode", urlConfig.gt7Mode);
 
   const [gameFovs, setGameFovs] = useState<Record<string, string | number>>(() => {
     const initialFovs: Record<string, string | number> = {
@@ -846,6 +858,37 @@ const Home: NextPage = () => {
   useEffect(() => {
     i18n.changeLanguage(language)
   }, [language]);
+
+  // Keep the URL query string in sync with the current config so the address
+  // bar is always a shareable link. Uses replaceState (no history entries).
+  // Debounced 200ms — browsers throttle replaceState, and calling it every
+  // slider tick noticeably stutters the drag interaction.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      syncQueryToConfig({
+        distanceToScreen,
+        screenSize,
+        aspectRatioA,
+        aspectRatioB,
+        curvature,
+        isTripleMonitor,
+        tripleMonitorAngle,
+        gt7Mode,
+        language,
+      });
+    }, 200);
+    return () => clearTimeout(timer);
+  }, [
+    distanceToScreen,
+    screenSize,
+    aspectRatioA,
+    aspectRatioB,
+    curvature,
+    isTripleMonitor,
+    tripleMonitorAngle,
+    gt7Mode,
+    language,
+  ]);
 
   useEffect(() => {
   }, [])
@@ -1084,6 +1127,18 @@ const Home: NextPage = () => {
     a.click();
   }
 
+  const handleShare = async () => {
+    const url = window.location.href;
+    try {
+      await navigator.clipboard.writeText(url);
+      Toast.show({ content: t("shareLinkCopied"), position: 'top' });
+    } catch (e) {
+      // Clipboard API failed (insecure context, permission denied, etc.).
+      // Fall back to prompt so the user can still copy manually.
+      window.prompt(t("shareLinkCopied"), url);
+    }
+  }
+
   // 过滤游戏列表
   const filteredGames = Object.entries(GameList).filter(([_, gameInfo]) => {
     if (!searchText) return true;
@@ -1236,23 +1291,29 @@ const Home: NextPage = () => {
 
       <main className={styles.main}>
         <div className={styles.header}>
-          <Selector
-            options={
-              [
-                { value: "en", label: "English" },
-                { value: "cn", label: "中文" },
-                { value: "it", label: "Italiano" },
-                { value: "de", label: "Deutsch" },
-                { value: "es", label: "Español" },
-                { value: "fr", label: "Français" },
-                { value: "ja", label: "日本語" },
-              ]
-            }
-            defaultValue={[language]}
-            onChange={(e) => { setLanguage(e[0]) }}
-          />
+          <div className={styles.headerLanguage}>
+            <Selector
+              columns={4}
+              options={
+                [
+                  { value: "en", label: "English" },
+                  { value: "cn", label: "中文" },
+                  { value: "it", label: "Italiano" },
+                  { value: "de", label: "Deutsch" },
+                  { value: "es", label: "Español" },
+                  { value: "fr", label: "Français" },
+                  { value: "ja", label: "日本語" },
+                ]
+              }
+              defaultValue={[language]}
+              onChange={(e) => { setLanguage(e[0]) }}
+            />
+          </div>
 
-          <Button onClick={handleExportCanvasAsImage} color='primary' fill='outline' style={{ position: 'absolute', right: 10, top: 20 }}>{t("export_canvas")}</Button>
+          <div className={styles.headerActions}>
+            <Button onClick={handleShare} color='primary' fill='outline'>{t("share")}</Button>
+            <Button onClick={handleExportCanvasAsImage} color='primary' fill='outline'>{t("export_canvas")}</Button>
+          </div>
         </div>
 
 
