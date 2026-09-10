@@ -95,7 +95,6 @@
   flex-wrap: wrap;
   align-items: center;
   max-width: 100vw;
-  overflow-x: hidden;
 }
 
 .mainform {
@@ -103,6 +102,73 @@
   flex-direction: column;
   justify-content: center;
   align-items: stretch;
+  width: 360px;
+}
+
+/* Wide screens: an ordinary column next to the canvas.
+   Narrow screens (see media query below): a translucent full-screen overlay. */
+.settingsPanel {
+  display: contents;
+}
+
+/* Floating settings button, narrow screens only. */
+.fab {
+  display: none;
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 101;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: none;
+  background-color: #1677ff;
+  color: #fff;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 600px) {
+  .settingsPanel {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    overflow-y: auto;
+    padding: 1rem 1rem 88px;
+    background-color: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+  }
+
+  .settingsPanelOpen {
+    display: block;
+  }
+
+  .mainform {
+    width: 100%;
+  }
+
+  /* The overlay itself stays see-through so the canvas reads underneath;
+     each control gets its own near-opaque plate so labels stay legible. */
+  .settingsPanel :global(.adm-list-item) {
+    background-color: rgba(255, 255, 255, 0.88);
+    border-radius: 8px;
+    margin-bottom: 6px;
+  }
+
+  .settingsPanel :global(.adm-list) {
+    background: transparent;
+    --border-top: none;
+    --border-bottom: none;
+    --border-inner: none;
+  }
+
+  .fab {
+    display: block;
+  }
 }
 
 .footer {
@@ -181,16 +247,19 @@
   bottom: auto;
 }
 
-#fov-preview {
+/* Was `#fov-preview`, which CSS Modules hashes into `#Home_fov-preview__xxx` —
+   it never matched the plain `id="fov-preview"` on the element, so the canvas
+   always rendered at its intrinsic 600px and got clipped on phones.
+   No aspect-ratio here on purpose: a canvas already carries its bitmap ratio,
+   so `height: auto` stays correct if CANVAS_HEIGHT ever changes again. */
+.canvas {
   width: 100%;
+  height: auto;
   display: block;
-  max-width: 100%;
-  max-height: 100%;
   border: none;
   margin: 0 auto;
   cursor: crosshair;
   font: inherit;
-  aspect-ratio: 600/490;
 }
 
 .gameFovData {

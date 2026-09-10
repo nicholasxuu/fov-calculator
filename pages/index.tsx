@@ -20,6 +20,17 @@ import { parseShareUrl, syncQueryToConfig } from '../utils/shareUrl';
 // ===== 画布和显示相关常量 =====
 const CANVAS_WIDTH = 600;
 const CANVAS_HEIGHT = 578;
+// 与 Home.module.css 里的移动端断点保持一致
+const NARROW_SCREEN_MAX_WIDTH = 600;
+// 窄屏时把画布右侧的车尾裁掉，核心区域（显示器 + 驾驶员）相应放大约 1.36 倍。
+// 头部固定画在 x=333，440 还能留出约 100px 车身；再窄就只剩显示器孤零零一条了。
+const MOBILE_CANVAS_WIDTH = 440;
+
+// ===== 设置面板自动弹出相关常量 =====
+const AUTO_OPEN_BOTTOM_SLACK = 8;      // 距页面底部这么近就算「滚到底了」
+// 页面可滚动距离不足这么多时一律不自动弹出。否则页面本来就没什么可滚的，
+// 「已经在底部」从一开始就成立，overlay 会弹出来再也关不掉，画布被永久遮住。
+const AUTO_OPEN_MIN_SCROLLABLE = 120;
 const CANVAS_PADDING = 0; // canvas边缘留白
 const BACKGROUND_COLOR = '#ffffff';
 const TEXT_COLOR = '#666666';
@@ -69,9 +80,8 @@ const SPEC_TEXT_OFFSET_X = 10; // 规格文本X偏移
 const SPEC_TEXT_LINE1_OFFSET_Y = 30; // 规格文本第一行Y偏移
 const SPEC_TEXT_LINE2_OFFSET_Y = 10; // 规格文本第二行Y偏移
 const SPEC_TEXT_LINE3_OFFSET_Y = 10; // 规格文本第三行Y偏移（在headSY下方）
-const WATERMARK_TOP_X = 370; // 水印顶部X位置
 const WATERMARK_TOP_Y = 15; // 水印顶部Y位置
-const WATERMARK_BOTTOM_X = 170; // 水印底部X位置
+const WATERMARK_EDGE_MARGIN = 10; // 水印距画布右边缘的距离
 const SIDE_MONITOR_CALIBRATION_OFFSET = 12; // 侧视图显示器校准线偏移
 
 // ===== 距离和FOV相关常量 =====
@@ -201,6 +211,11 @@ let headPositions = {
 };
 let carScale = 1;
 let imageScale = 1; // 统一的图片缩放比例
+// 窄屏上画布被 CSS 缩小，字号和文字偏移按同一系数放大，
+// 保证文字在屏幕上的物理大小不随画布缩放而变小。
+let fontScale = 1;
+const scaledFont = (size: number) => `${(size * fontScale).toFixed(1)}px ${FONT_FAMILY}`;
+const scaled = (value: number) => value * fontScale;
 
 const getImage = (src: string) => new Promise<HTMLImageElement>((resolve) => {
   const topImage = new Image()
@@ -339,7 +354,8 @@ const drawDistanceLine = (
   ctx.setLineDash([]);
 
   ctx.globalAlpha = ALPHA_OPAQUE;
-  ctx.fillText(`${distanceToScreen} cm`, topMonX + DISTANCE_TEXT_OFFSET, headSY - TEXT_SIZE / 2)
+  ctx.font = scaledFont(TEXT_SIZE);
+  ctx.fillText(`${distanceToScreen} cm`, topMonX + DISTANCE_TEXT_OFFSET, headSY - scaled(TEXT_SIZE) / 2)
 }
 
 const drawAngle = (
@@ -371,7 +387,8 @@ const drawAngle = (
 
   if (fromX === toX) {
     ctx.globalAlpha = ALPHA_OPAQUE;
-    ctx.fillText(`${angleNum}\u00b0`, centerX + textOffsetX + angleNumOffsetX, centerY + textOffsetY + TEXT_SIZE / 2)
+    ctx.font = scaledFont(TEXT_SIZE);
+    ctx.fillText(`${angleNum}\u00b0`, centerX + scaled(textOffsetX + angleNumOffsetX), centerY + textOffsetY + scaled(TEXT_SIZE) / 2)
   }
 }
 
@@ -405,7 +422,8 @@ const drawLengthCalibration = (
   ctx.stroke();
 
   ctx.globalAlpha = ALPHA_OPAQUE;
-  ctx.fillText(`${(totalWidth / carScale + 2).toFixed(1)} cm`, toX, centerY - totalWidth / 2 - TEXT_SIZE / 2)
+  ctx.font = scaledFont(TEXT_SIZE);
+  ctx.fillText(`${(totalWidth / carScale + 2).toFixed(1)} cm`, toX, centerY - totalWidth / 2 - scaled(TEXT_SIZE) / 2)
 }
 
 const drawSpecText = (
@@ -421,18 +439,21 @@ const drawSpecText = (
 ) => {
   ctx.globalAlpha = ALPHA_OPAQUE;
   ctx.fillStyle = TEXT_COLOR;
-  ctx.font = `${FONT_SIZE_SPEC}px ${FONT_FAMILY}`;
-  ctx.fillText(`${screenSize}${t("inch")} ${isTripleMonitor ? `${t("tripleMonitor")} ${tripleMonitorAngle}\u00B0 ${t("angle")}` : ""}`, SPEC_TEXT_OFFSET_X, headSY - SPEC_TEXT_LINE1_OFFSET_Y);
-  ctx.fillText(`${aspectRatioA}:${aspectRatioB} ${curvature > 0 ? `${curvature}0R` : t("flat")}`, SPEC_TEXT_OFFSET_X, headSY - SPEC_TEXT_LINE2_OFFSET_Y);
-  ctx.fillText(`${t("ppd")}: ${ppd.toFixed(1)}`, SPEC_TEXT_OFFSET_X, headSY + SPEC_TEXT_LINE3_OFFSET_Y);
+  ctx.font = scaledFont(FONT_SIZE_SPEC);
+  ctx.fillText(`${screenSize}${t("inch")} ${isTripleMonitor ? `${t("tripleMonitor")} ${tripleMonitorAngle}\u00B0 ${t("angle")}` : ""}`, SPEC_TEXT_OFFSET_X, headSY - scaled(SPEC_TEXT_LINE1_OFFSET_Y));
+  ctx.fillText(`${aspectRatioA}:${aspectRatioB} ${curvature > 0 ? `${curvature}0R` : t("flat")}`, SPEC_TEXT_OFFSET_X, headSY - scaled(SPEC_TEXT_LINE2_OFFSET_Y));
+  ctx.fillText(`${t("ppd")}: ${ppd.toFixed(1)}`, SPEC_TEXT_OFFSET_X, headSY + scaled(SPEC_TEXT_LINE3_OFFSET_Y));
 }
 
-const drawWatermark = (ctx: CanvasRenderingContext2D) => {
+const drawWatermark = (ctx: CanvasRenderingContext2D, canvasWidth: number) => {
   ctx.globalAlpha = ALPHA_SEMI_TRANSPARENT;
   ctx.fillStyle = TEXT_COLOR;
-  ctx.font = `${FONT_SIZE_SPEC}px ${FONT_FAMILY}`;
-  ctx.fillText(WATERMARK_TEXT, WATERMARK_TOP_X, WATERMARK_TOP_Y);
-  ctx.fillText(WATERMARK_TEXT, WATERMARK_BOTTOM_X, CANVAS_HEIGHT - SPEC_TEXT_LINE2_OFFSET_Y);
+  ctx.font = scaledFont(FONT_SIZE_SPEC);
+  ctx.textAlign = 'right';
+  ctx.fillText(WATERMARK_TEXT, canvasWidth - WATERMARK_EDGE_MARGIN, scaled(WATERMARK_TOP_Y));
+  ctx.textAlign = 'center';
+  ctx.fillText(WATERMARK_TEXT, canvasWidth / 2, CANVAS_HEIGHT - scaled(SPEC_TEXT_LINE2_OFFSET_Y));
+  ctx.textAlign = 'left';
 }
 
 const drawMonitors = (
@@ -911,6 +932,16 @@ const Home: NextPage = () => {
   const [resolutionH, setResolutionH] = useStickyState(DEFAULT_RESOLUTION_H, "resolutionH", urlConfig.resolutionH);
   const [showCustomResolutionInput, setShowCustomResolutionInput] = useState(false);
   const [showPpdHint, setShowPpdHint] = useState(false);
+  // null = 关闭；'manual' = 点 FAB 打开（跳顶部并锁滚动）；
+  // 'auto' = 滚动触发（不跳转不锁滚动，往回滚会自己收起）
+  const [settingsMode, setSettingsMode] = useState<null | "manual" | "auto">(null);
+  const showSettings = settingsMode !== null;
+  // 自动弹出的「上膛」标记：弹过一次或被手动关掉后落下，
+  // 只有滚回触发线以上才会重新上膛，避免在底部反复弹出
+  const autoOpenArmed = useRef(true);
+  const [isNarrowScreen, setIsNarrowScreen] = useState(false);
+  // canvas 的实际 CSS 宽度，变化时需要按新的缩放比重算字号并重绘
+  const [canvasCssWidth, setCanvasCssWidth] = useState(0);
   const [minPpdMode, setMinPpdMode] = useStickyState(false, "minPpdMode", urlConfig.minPpdMode);
   const [minPpd, setMinPpd] = useStickyState(DEFAULT_MIN_PPD, "minPpd", urlConfig.minPpd);
 
@@ -1065,11 +1096,22 @@ const Home: NextPage = () => {
 
   useEffect(() => {
     const drawCanvas = async () => {
-      const ctx = canvas.current?.getContext("2d");
-      if (!ctx) {
+      const canvasEl = canvas.current;
+      const ctx = canvasEl?.getContext("2d");
+      if (!canvasEl || !ctx) {
         return;
       }
-      ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
+
+      // 窄屏裁掉右侧车尾，只保留核心区域；上下不裁，世界坐标不变，
+      // 所以画在 x > bitmapWidth 的内容自然落在画布外，不需要任何平移。
+      const bitmapWidth = isNarrowScreen ? MOBILE_CANVAS_WIDTH : CANVAS_WIDTH;
+      if (canvasEl.width !== bitmapWidth) {
+        canvasEl.width = bitmapWidth;
+      }
+      // 画布被 CSS 缩到多小，字就放大多少倍补回来
+      fontScale = Math.max(1, bitmapWidth / (canvasEl.clientWidth || bitmapWidth));
+
+      ctx.clearRect(0, 0, bitmapWidth, CANVAS_HEIGHT)
 
       // 第一步:使用默认缩放(1.0)计算显示器位置和边界
       const aspectRatio = aspectRatioA / aspectRatioB;
@@ -1179,7 +1221,7 @@ const Home: NextPage = () => {
         calcCenterPpd(screenSize, aspectRatio, resolutionW, distanceToScreen),
       )
 
-      drawWatermark(ctx)
+      drawWatermark(ctx, bitmapWidth)
 
       // 计算所有游戏的 FOV 值
       const newGameFovs: Record<string, string | number> = {
@@ -1242,7 +1284,105 @@ const Home: NextPage = () => {
     tripleMonitorAngle,
     resolutionW,
     language,
+    isNarrowScreen,
+    canvasCssWidth,
   ])
+
+  // 跟踪窄屏断点，与 Home.module.css 用同一个阈值
+  useEffect(() => {
+    const query = window.matchMedia(`(max-width: ${NARROW_SCREEN_MAX_WIDTH}px)`);
+    const sync = () => setIsNarrowScreen(query.matches);
+    sync();
+    query.addEventListener("change", sync);
+    return () => query.removeEventListener("change", sync);
+  }, []);
+
+  // 画布显示宽度变化（旋转屏幕、缩放窗口）时重绘，让字号跟着调整
+  useEffect(() => {
+    const canvasEl = canvas.current;
+    if (!canvasEl) return;
+    const observer = new ResizeObserver(() => setCanvasCssWidth(canvasEl.clientWidth));
+    observer.observe(canvasEl);
+    return () => observer.disconnect();
+  }, []);
+
+  const closeSettings = () => {
+    // 手动关闭后落膛，否则停在底部时一关就立刻又被自动弹出来
+    autoOpenArmed.current = false;
+    setSettingsMode(null);
+  };
+
+  // 手动打开时滚到顶部并锁住页面滚动，保证画布在视口里。
+  // 自动弹出不走这段：锁了滚动就没法靠往回滚把它关掉。
+  useEffect(() => {
+    if (settingsMode !== "manual") return;
+    window.scrollTo(0, 0);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [settingsMode]);
+
+  useEffect(() => {
+    if (!showSettings) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") closeSettings();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [showSettings]);
+
+  // 从窄屏切回宽屏时，overlay 不该继续挂着
+  useEffect(() => {
+    if (!isNarrowScreen) setSettingsMode(null);
+  }, [isNarrowScreen]);
+
+  // 滚过画布、或滚到页面底部时自动弹出设置面板
+  useEffect(() => {
+    if (!isNarrowScreen) return;
+
+    let frame = 0;
+    const evaluate = () => {
+      frame = 0;
+      const doc = document.documentElement;
+      const canvasBottom = canvas.current?.getBoundingClientRect().bottom ?? Infinity;
+      // 画布完全滚出视野 = 到了宽屏上本该放选项的位置
+      const scrolledPastCanvas = canvasBottom <= 0;
+      const atPageBottom =
+        window.scrollY + window.innerHeight >= doc.scrollHeight - AUTO_OPEN_BOTTOM_SLACK;
+
+      if (!scrolledPastCanvas && !atPageBottom) {
+        // 回到触发线以上：重新上膛，并收起之前自动弹出的面板
+        autoOpenArmed.current = true;
+        setSettingsMode((mode) => (mode === "auto" ? null : mode));
+        return;
+      }
+
+      if (!autoOpenArmed.current) return;
+      // 页面短到几乎没得滚时，「在底部」恒成立，弹出来就关不掉了
+      if (doc.scrollHeight - window.innerHeight < AUTO_OPEN_MIN_SCROLLABLE) return;
+
+      setSettingsMode((mode) => {
+        if (mode !== null) return mode;
+        autoOpenArmed.current = false;
+        return "auto";
+      });
+    };
+
+    const onScroll = () => {
+      if (frame) return;
+      frame = window.requestAnimationFrame(evaluate);
+    };
+
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      if (frame) window.cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, [isNarrowScreen]);
 
   const handleExportCanvasAsImage = () => {
     const canvas = document.getElementById('fov-preview') as HTMLCanvasElement;
@@ -1445,7 +1585,7 @@ const Home: NextPage = () => {
 
         <div className={styles.body}>
           <div className={styles.display}>
-            <canvas id="fov-preview" ref={canvas} width={CANVAS_WIDTH} height={CANVAS_HEIGHT}></canvas>
+            <canvas id="fov-preview" className={styles.canvas} ref={canvas} width={CANVAS_WIDTH} height={CANVAS_HEIGHT}></canvas>
             <div className={styles.gameFovData}>
               {t("horizontalFov")} {gameFovs.hFov}°<br />
               {t("verticalFov")} {gameFovs.vFov}°<br />
@@ -1482,10 +1622,13 @@ const Home: NextPage = () => {
           </div>
 
 
+          <div
+            className={`${styles.settingsPanel}${showSettings ? ` ${styles.settingsPanelOpen}` : ''}`}
+            onClick={(e) => { if (e.target === e.currentTarget) closeSettings() }}
+          >
           <Form
             className={styles.mainform}
             name="basic"
-            style={{ width: '360px' }}
           >
             <Form.Item>
               <Selector
@@ -1798,6 +1941,17 @@ const Home: NextPage = () => {
             </Form.Item>
 
           </Form>
+          </div>
+
+          <button
+            type="button"
+            className={styles.fab}
+            aria-label={t("settings")}
+            aria-expanded={showSettings}
+            onClick={() => (showSettings ? closeSettings() : setSettingsMode("manual"))}
+          >
+            {showSettings ? '\u2715' : '\u2699'}
+          </button>
 
         </div >
       </main >
