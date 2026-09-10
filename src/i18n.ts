@@ -58,6 +58,12 @@ i18n
           enabled: "Enabled",
           disabled: "Disabled",
           autoAdjusted: "Auto-adjusted",
+          resolution: "Resolution",
+          ppd: "PPD",
+          resolutionForPpd: "for PPD calculation",
+          minPpdMode: "Minimum PPD Mode",
+          limitedByMinPpd: "limited by min PPD",
+          ppdHint: "PPD (pixels per degree) = how many pixels fall within one degree of your view, a measure of sharpness.\n~20: VR-headset level (Steam Frame: 2160 px across 110°), pixels clearly visible\n30-40: pixels stop being noticeable at a normal seating distance\n60: retina level, the eye resolves about 1 arcminute",
           ...Object.entries(gameTranslations).reduce((acc, [key, value]) => {
             return { ...acc, [key]: value.en };
           }, {}),
@@ -88,6 +94,12 @@ i18n
           enabled: "已启用",
           disabled: "已禁用",
           autoAdjusted: "自动调整",
+          resolution: "屏幕分辨率",
+          ppd: "PPD",
+          resolutionForPpd: "用于计算清晰度 PPD",
+          minPpdMode: "最低PPD模式",
+          limitedByMinPpd: "受最低PPD限制",
+          ppdHint: "PPD（每度像素数）= 一度视角内有多少像素，衡量清晰度。\n约 20：VR 头显水平（Steam Frame：2160 像素覆盖 110°），像素感明显\n30–40：正常坐姿下基本看不出像素\n60：视网膜级别，人眼约能分辨 1 角分",
           ...Object.entries(gameTranslations).reduce((acc, [key, value]) => {
             return { ...acc, [key]: value.cn };
           }, {}),
@@ -118,6 +130,12 @@ i18n
           enabled: "Abilitato",
           disabled: "Disabilitato",
           autoAdjusted: "Regolato automaticamente",
+          resolution: "Risoluzione",
+          ppd: "PPD",
+          resolutionForPpd: "per il calcolo del PPD",
+          minPpdMode: "Modalità PPD Minimo",
+          limitedByMinPpd: "limitato dal PPD minimo",
+          ppdHint: "PPD (pixel per grado) = quanti pixel rientrano in un grado di campo visivo, una misura della nitidezza.\n~20: livello dei visori VR (Steam Frame: 2160 px su 110°), pixel ben visibili\n30-40: i pixel non si notano più alla normale distanza di seduta\n60: livello retina, l'occhio distingue circa 1 minuto d'arco",
           ...Object.entries(gameTranslations).reduce((acc, [key, value]) => {
             return { ...acc, [key]: value.en };
           }, {}),
@@ -148,6 +166,12 @@ i18n
           enabled: "Aktiviert",
           disabled: "Deaktiviert",
           autoAdjusted: "Automatisch angepasst",
+          resolution: "Auflösung",
+          ppd: "PPD",
+          resolutionForPpd: "für die PPD-Berechnung",
+          minPpdMode: "Mindest-PPD-Modus",
+          limitedByMinPpd: "durch Mindest-PPD begrenzt",
+          ppdHint: "PPD (Pixel pro Grad) = wie viele Pixel auf ein Grad des Sichtfelds entfallen, ein Maß für die Schärfe.\n~20: VR-Headset-Niveau (Steam Frame: 2160 px auf 110°), Pixel deutlich sichtbar\n30-40: Pixel fallen im normalen Sitzabstand nicht mehr auf\n60: Retina-Niveau, das Auge löst rund 1 Bogenminute auf",
           ...Object.entries(gameTranslations).reduce((acc, [key, value]) => {
             return { ...acc, [key]: value.en };
           }, {}),
@@ -178,6 +202,12 @@ i18n
           enabled: "Habilitado",
           disabled: "Deshabilitado",
           autoAdjusted: "Ajustado automáticamente",
+          resolution: "Resolución",
+          ppd: "PPD",
+          resolutionForPpd: "para el cálculo del PPD",
+          minPpdMode: "Modo PPD Mínimo",
+          limitedByMinPpd: "limitado por el PPD mínimo",
+          ppdHint: "PPD (píxeles por grado) = cuántos píxeles caben en un grado de campo visual, una medida de nitidez.\n~20: nivel de visores de RV (Steam Frame: 2160 px en 110°), píxeles claramente visibles\n30-40: los píxeles dejan de notarse a una distancia de asiento normal\n60: nivel retina, el ojo distingue alrededor de 1 minuto de arco",
           ...Object.entries(gameTranslations).reduce((acc, [key, value]) => {
             return { ...acc, [key]: value.en };
           }, {}),
@@ -208,6 +238,12 @@ i18n
           enabled: "Activé",
           disabled: "Désactivé",
           autoAdjusted: "Ajusté automatiquement",
+          resolution: "Résolution",
+          ppd: "PPD",
+          resolutionForPpd: "pour le calcul du PPD",
+          minPpdMode: "Mode PPD Minimum",
+          limitedByMinPpd: "limité par le PPD minimum",
+          ppdHint: "PPD (pixels par degré) = combien de pixels tiennent dans un degré de champ de vision, une mesure de netteté.\n~20 : niveau des casques VR (Steam Frame : 2160 px sur 110°), pixels bien visibles\n30-40 : les pixels ne se remarquent plus à une distance d'assise normale\n60 : niveau rétine, l'œil distingue environ 1 minute d'arc",
           ...Object.entries(gameTranslations).reduce((acc, [key, value]) => {
             return { ...acc, [key]: value.en };
           }, {}),
@@ -238,6 +274,12 @@ i18n
           enabled: "有効",
           disabled: "無効",
           autoAdjusted: "自動調整",
+          resolution: "解像度",
+          ppd: "PPD",
+          resolutionForPpd: "PPD 計算用",
+          minPpdMode: "最低PPDモード",
+          limitedByMinPpd: "最低PPDによる制限",
+          ppdHint: "PPD（1度あたりのピクセル数）= 視野1度に何ピクセル入るかを示す鮮明さの指標。\n約20：VRヘッドセット相当（Steam Frame: 110°に2160ピクセル）、ピクセルがはっきり見える\n30〜40：通常の着座距離ではピクセルが目立たない\n60：網膜レベル、人間の目は約1分角を分解できる",
           ...Object.entries(gameTranslations).reduce((acc, [key, value]) => {
             return { ...acc, [key]: value.en };
           }, {}),

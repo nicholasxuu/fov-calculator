@@ -8,6 +8,10 @@ export type ShareConfig = {
   tripleMonitorAngle?: number;
   gt7Mode?: boolean;
   language?: string;
+  resolutionW?: number;
+  resolutionH?: number;
+  minPpdMode?: boolean;
+  minPpd?: number;
 };
 
 // Defaults used to skip fields when encoding a share URL (keeps it short).
@@ -22,6 +26,10 @@ const SHARE_DEFAULTS: Required<ShareConfig> = {
   tripleMonitorAngle: 60,
   gt7Mode: false,
   language: 'en',
+  resolutionW: 1920,
+  resolutionH: 1080,
+  minPpdMode: false,
+  minPpd: 40,
 };
 
 const finiteNumber = (raw: string | null): number | undefined => {
@@ -67,6 +75,18 @@ export const encodeShareParams = (config: Required<ShareConfig>): string => {
   if (config.language !== SHARE_DEFAULTS.language) {
     params.set('l', config.language);
   }
+  if (
+    config.resolutionW !== SHARE_DEFAULTS.resolutionW ||
+    config.resolutionH !== SHARE_DEFAULTS.resolutionH
+  ) {
+    params.set('r', `${config.resolutionW}x${config.resolutionH}`);
+  }
+  if (config.minPpdMode !== SHARE_DEFAULTS.minPpdMode) {
+    params.set('mp', config.minPpdMode ? '1' : '0');
+  }
+  if (config.minPpd !== SHARE_DEFAULTS.minPpd) {
+    params.set('mpv', String(config.minPpd));
+  }
 
   return params.toString();
 };
@@ -106,6 +126,21 @@ export const parseShareUrl = (raw: string): ShareConfig => {
 
   const l = params.get('l');
   if (l) out.language = l;
+
+  const r = params.get('r');
+  if (r) {
+    const [rW, rH] = r.split('x').map(Number);
+    if (Number.isFinite(rW) && Number.isFinite(rH)) {
+      out.resolutionW = rW;
+      out.resolutionH = rH;
+    }
+  }
+
+  const mp = flag(params.get('mp'));
+  if (mp !== undefined) out.minPpdMode = mp;
+
+  const mpv = finiteNumber(params.get('mpv'));
+  if (mpv !== undefined) out.minPpd = mpv;
 
   return out;
 };

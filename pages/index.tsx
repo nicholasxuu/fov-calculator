@@ -54,6 +54,7 @@ const TEXT_SIZE = 10;
 const FONT_SIZE_SPEC = 15;
 const FONT_FAMILY = "Arial";
 const WATERMARK_TEXT = "fovcalc.xusf.xyz";
+const HINT_ICON_COLOR = '#1677ff'; // 提示图标颜色，与 antd-mobile primary 一致
 
 // ===== 标注边距和偏移量常量 =====
 const ANNOTATION_MARGIN_LEFT_RIGHT = 50; // 左右标注需要的空间
@@ -67,6 +68,7 @@ const ANGLE_TEXT_OFFSET_Y = 0; // 角度文本Y偏移
 const SPEC_TEXT_OFFSET_X = 10; // 规格文本X偏移
 const SPEC_TEXT_LINE1_OFFSET_Y = 30; // 规格文本第一行Y偏移
 const SPEC_TEXT_LINE2_OFFSET_Y = 10; // 规格文本第二行Y偏移
+const SPEC_TEXT_LINE3_OFFSET_Y = 10; // 规格文本第三行Y偏移（在headSY下方）
 const WATERMARK_TOP_X = 370; // 水印顶部X位置
 const WATERMARK_TOP_Y = 15; // 水印顶部Y位置
 const WATERMARK_BOTTOM_X = 170; // 水印底部X位置
@@ -109,6 +111,37 @@ const MIN_SCREEN_SIZE = 5;              // 最小屏幕尺寸（英寸）
 const MAX_SCREEN_SIZE = 110;            // 最大屏幕尺寸（英寸）
 const SLIDER_VALUE_MIN = 0;             // 滑块最小值
 const SLIDER_VALUE_MAX = 100;           // 滑块最大值
+
+// ===== 分辨率与PPD相关常量 =====
+const DEFAULT_RESOLUTION_W = 1920;      // 默认横向像素
+const DEFAULT_RESOLUTION_H = 1080;      // 默认纵向像素
+const MIN_RESOLUTION = 1;               // 最小像素数（避免除零）
+// 各画面比例下单块屏幕的常用分辨率档位，value 格式为 "宽x高"，"0x0" 表示自定义。
+// 冷门分辨率不列在这里，交给自定义输入。
+const RESOLUTION_PRESETS: Record<string, string[]> = {
+  "4:3": ["1024x768", "1600x1200"],
+  "5:4": ["1280x1024"],
+  "16:10": ["1920x1200", "2560x1600", "3840x2400"],
+  "16:9": ["1920x1080", "2560x1440", "3840x2160"],
+  "21:9": ["2560x1080", "3440x1440", "3840x1600"],
+  "32:9": ["3840x1080", "5120x1440"],
+};
+const CUSTOM_RESOLUTION_VALUE = "0x0";
+const TV_SCREEN_SIZE = 42;              // 42英寸及以上按电视处理，默认推荐该比例下最高的4K档位
+
+// 给定比例和屏幕尺寸下推荐的分辨率。电视尺寸推荐横向像素最多的档位（16:9 即 4K），
+// 显示器尺寸推荐入门档位。没有档位（自定义比例）时返回 null。
+const getRecommendedResolution = (presets: string[], screenSize: number): string | null => {
+  if (presets.length === 0) return null;
+  if (screenSize < TV_SCREEN_SIZE) return presets[0];
+  return presets.reduce((best, preset) =>
+    Number(preset.split("x")[0]) > Number(best.split("x")[0]) ? preset : best);
+}
+
+// ===== 最低PPD模式常量 =====
+const DEFAULT_MIN_PPD = 40;             // 最低PPD默认值
+const MIN_MIN_PPD = 10;                 // 最低PPD可设的下限
+const MAX_MIN_PPD = 200;                // 最低PPD可设的上限
 
 // ===== 单位转换常量 =====
 const INCH_TO_CM = 2.54;                // 英寸到厘米的转换系数
@@ -384,12 +417,14 @@ const drawSpecText = (
   aspectRatioB: number,
   curvature: number,
   headSY: number,
+  ppd: number,
 ) => {
   ctx.globalAlpha = ALPHA_OPAQUE;
   ctx.fillStyle = TEXT_COLOR;
   ctx.font = `${FONT_SIZE_SPEC}px ${FONT_FAMILY}`;
   ctx.fillText(`${screenSize}${t("inch")} ${isTripleMonitor ? `${t("tripleMonitor")} ${tripleMonitorAngle}\u00B0 ${t("angle")}` : ""}`, SPEC_TEXT_OFFSET_X, headSY - SPEC_TEXT_LINE1_OFFSET_Y);
   ctx.fillText(`${aspectRatioA}:${aspectRatioB} ${curvature > 0 ? `${curvature}0R` : t("flat")}`, SPEC_TEXT_OFFSET_X, headSY - SPEC_TEXT_LINE2_OFFSET_Y);
+  ctx.fillText(`${t("ppd")}: ${ppd.toFixed(1)}`, SPEC_TEXT_OFFSET_X, headSY + SPEC_TEXT_LINE3_OFFSET_Y);
 }
 
 const drawWatermark = (ctx: CanvasRenderingContext2D) => {
@@ -488,11 +523,43 @@ const drawMonitors = (
 
 }
 
+// 屏幕的真实横向宽度（厘米），由对角线尺寸和画面比例推出
+const getScreenRealWidth = (screenSize: number, aspectRatio: number) =>
+  (INCH_TO_CM * screenSize) * (aspectRatio / Math.sqrt(1 + aspectRatio * aspectRatio))
+
+// 中间屏幕正中心的 PPD（pixels per degree）。
+// 屏幕中心正对眼睛，所以一个像素在中心张开的角度是 2*atan(pitch / (2*distance))，
+// PPD 即该角度的倒数。曲面屏中心同样正对眼睛，公式不变。
+const calcCenterPpd = (
+  screenSize: number,
+  aspectRatio: number,
+  resolutionW: number,
+  distanceToScreen: number,
+) => {
+  const pixelPitch = getScreenRealWidth(screenSize, aspectRatio) / Math.max(resolutionW, MIN_RESOLUTION);
+  const pixelAngleDeg = 2 * Math.atan(pixelPitch / (2 * distanceToScreen)) / DEGREES_TO_RADIANS;
+  return 1 / pixelAngleDeg;
+}
+
+// 达到指定 PPD 所需的最小观看距离（厘米）。PPD 随距离单调递增，
+// 所以「最低PPD」等价于给 distanceToScreen 设一个下限。
+const calcMinDistanceForPpd = (
+  screenSize: number,
+  aspectRatio: number,
+  resolutionW: number,
+  minPpd: number,
+) => {
+  const pixelPitch = getScreenRealWidth(screenSize, aspectRatio) / Math.max(resolutionW, MIN_RESOLUTION);
+  const halfPixelAngleRad = (1 / minPpd) * DEGREES_TO_RADIANS / 2;
+  const distance = pixelPitch / (2 * Math.tan(halfPixelAngleRad));
+  return Math.min(Math.max(distance, MIN_DISTANCE_TO_SCREEN), MAX_DISTANCE_TO_SCREEN);
+}
+
 const getMonitor = (screenSize: number, aspectRatio: number, curveRadius: number, customCarScale?: number): any => {
   // 使用传入的carScale，如果没有传入则使用全局的
   const useCarScale = customCarScale !== undefined ? customCarScale : carScale;
 
-  const realWidth = (INCH_TO_CM * screenSize) * (aspectRatio / Math.sqrt(1 + aspectRatio * aspectRatio))
+  const realWidth = getScreenRealWidth(screenSize, aspectRatio)
   const realHeight = realWidth / aspectRatio
   const width = useCarScale * realWidth
   const height = useCarScale * realHeight
@@ -840,6 +907,12 @@ const Home: NextPage = () => {
   const [showCustomCurvatureInput, setShowCustomCurvatureInput] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [gt7Mode, setGt7Mode] = useStickyState(false, "gt7Mode", urlConfig.gt7Mode);
+  const [resolutionW, setResolutionW] = useStickyState(DEFAULT_RESOLUTION_W, "resolutionW", urlConfig.resolutionW);
+  const [resolutionH, setResolutionH] = useStickyState(DEFAULT_RESOLUTION_H, "resolutionH", urlConfig.resolutionH);
+  const [showCustomResolutionInput, setShowCustomResolutionInput] = useState(false);
+  const [showPpdHint, setShowPpdHint] = useState(false);
+  const [minPpdMode, setMinPpdMode] = useStickyState(false, "minPpdMode", urlConfig.minPpdMode);
+  const [minPpd, setMinPpd] = useStickyState(DEFAULT_MIN_PPD, "minPpd", urlConfig.minPpd);
 
   const [gameFovs, setGameFovs] = useState<Record<string, string | number>>(() => {
     const initialFovs: Record<string, string | number> = {
@@ -875,6 +948,10 @@ const Home: NextPage = () => {
         tripleMonitorAngle,
         gt7Mode,
         language,
+        resolutionW,
+        resolutionH,
+        minPpdMode,
+        minPpd,
       });
     }, 200);
     return () => clearTimeout(timer);
@@ -888,10 +965,56 @@ const Home: NextPage = () => {
     tripleMonitorAngle,
     gt7Mode,
     language,
+    resolutionW,
+    resolutionH,
+    minPpdMode,
+    minPpd,
   ]);
 
   useEffect(() => {
   }, [])
+
+  // 当前画面比例下的常用分辨率档位；比例是自定义的就只剩「自定义」一个选项
+  const resolutionPresets = RESOLUTION_PRESETS[`${aspectRatioA}:${aspectRatioB}`] ?? [];
+
+  // 换画面比例、或屏幕尺寸跨过电视门槛时，把分辨率切到新的推荐档位。
+  // 其余情况（比如只是微调尺寸滑块）不动，免得打断用户的手动选择。
+  const resolutionSyncCtx = useRef({
+    aspectRatio: `${aspectRatioA}:${aspectRatioB}`,
+    isTvSize: screenSize >= TV_SCREEN_SIZE,
+    isFirstRender: true,
+  });
+  useEffect(() => {
+    const aspectRatioKey = `${aspectRatioA}:${aspectRatioB}`;
+    const isTvSize = screenSize >= TV_SCREEN_SIZE;
+    const prev = resolutionSyncCtx.current;
+    resolutionSyncCtx.current = { aspectRatio: aspectRatioKey, isTvSize, isFirstRender: false };
+
+    // 首次渲染跳过，否则会把分享链接 / localStorage 里带来的分辨率覆盖掉
+    if (prev.isFirstRender) return;
+    if (aspectRatioKey === prev.aspectRatio && isTvSize === prev.isTvSize) return;
+
+    const recommended = getRecommendedResolution(resolutionPresets, screenSize);
+    if (!recommended || recommended === `${resolutionW}x${resolutionH}`) return;
+    const [w, h] = recommended.split("x").map(Number);
+    setResolutionW(w);
+    setResolutionH(h);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [aspectRatioA, aspectRatioB, screenSize]);
+
+  // 最低PPD模式下 distanceToScreen 的下限
+  const minPpdDistance = minPpdMode
+    ? calcMinDistanceForPpd(screenSize, aspectRatioA / aspectRatioB, resolutionW, minPpd)
+    : MIN_DISTANCE_TO_SCREEN;
+  const effectiveMinDistance = minPpdMode ? Math.ceil(minPpdDistance) : MIN_DISTANCE_TO_SCREEN;
+
+  // 最低PPD模式：屏幕尺寸 / 比例 / 分辨率变化后距离若低于下限，自动拉回范围内
+  useEffect(() => {
+    if (!minPpdMode) return;
+    if (distanceToScreen >= effectiveMinDistance) return;
+    setDistanceToScreen(effectiveMinDistance);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [minPpdMode, minPpd, screenSize, aspectRatioA, aspectRatioB, resolutionW, distanceToScreen]);
 
   // 当锁定 vFOV 时，自动调整 distanceToScreen
   // GT7 车内视角模式：自动调整 distanceToScreen 以达到固定垂直FOV
@@ -1052,7 +1175,8 @@ const Home: NextPage = () => {
         aspectRatioA,
         aspectRatioB,
         curvature,
-        headPositions.sy
+        headPositions.sy,
+        calcCenterPpd(screenSize, aspectRatio, resolutionW, distanceToScreen),
       )
 
       drawWatermark(ctx)
@@ -1116,6 +1240,8 @@ const Home: NextPage = () => {
     curvature,
     isTripleMonitor,
     tripleMonitorAngle,
+    resolutionW,
+    language,
   ])
 
   const handleExportCanvasAsImage = () => {
@@ -1406,14 +1532,14 @@ const Home: NextPage = () => {
               </div>
             </Form.Item>
 
-            <Form.Item label={`${t("distanceToScreen")}: ${distanceToScreen} ${t("cm")}${gt7Mode ? ` (${t("autoAdjusted")})` : ''}`}>
+            <Form.Item label={`${t("distanceToScreen")}: ${distanceToScreen} ${t("cm")}${gt7Mode ? ` (${t("autoAdjusted")})` : ''}${minPpdMode ? ` (\u2265 ${effectiveMinDistance}, ${t("limitedByMinPpd")})` : ''}`}>
               {/* <Input type="number" value={`${distanceToScreen}`} onChange={(e) => setDistanceToScreen(parseInt(e))} /> */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <Button
-                  disabled={gt7Mode || distanceToScreen <= MIN_DISTANCE_TO_SCREEN}
+                  disabled={gt7Mode || distanceToScreen <= effectiveMinDistance}
                   size="small"
                   fill="outline"
-                  onClick={() => setDistanceToScreen(Math.max(MIN_DISTANCE_TO_SCREEN, distanceToScreen - 1))}
+                  onClick={() => setDistanceToScreen(Math.max(effectiveMinDistance, distanceToScreen - 1))}
                 >
                   -
                 </Button>
@@ -1423,8 +1549,8 @@ const Home: NextPage = () => {
                     value={distanceToSliderValue(distanceToScreen)}
                     min={SLIDER_VALUE_MIN}
                     max={SLIDER_VALUE_MAX}
-                    popover={(value) => `${Math.round(sliderValueToDistance(value))} cm`}
-                    onChange={(e) => setDistanceToScreen(Math.round(sliderValueToDistance(e as number)))}
+                    popover={(value) => `${Math.max(effectiveMinDistance, Math.round(sliderValueToDistance(value)))} cm`}
+                    onChange={(e) => setDistanceToScreen(Math.max(effectiveMinDistance, Math.round(sliderValueToDistance(e as number))))}
                   />
                 </div>
                 <Button
@@ -1560,16 +1686,115 @@ const Home: NextPage = () => {
               )}
             </div>
 
+            <div style={{ height: 118 }}>
+              {showCustomResolutionInput || resolutionPresets.length === 0 ? (
+                <Form.Item label={`${t("resolution")}: ${resolutionW} \u00d7 ${resolutionH} (${t("resolutionForPpd")})`}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'space-between' }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', justifyContent: 'flex-start' }}>
+                      <Input type="number" value={`${resolutionW}`} onChange={(val) => setResolutionW(parseInt(val) || 0)} style={{ width: '70px', '--text-align': 'center' }} />
+                      <span style={{ lineHeight: '23px' }}>&times;</span>
+                      <Input type="number" value={`${resolutionH}`} onChange={(val) => setResolutionH(parseInt(val) || 0)} style={{ width: '70px', '--text-align': 'center' }} />
+                    </div>
+                    <Button
+                      fill="outline"
+                      color="primary"
+                      disabled={resolutionPresets.length === 0}
+                      onClick={() => setShowCustomResolutionInput(false)}
+                    >
+                      {t("back")}
+                    </Button>
+                  </div>
+                </Form.Item>
+              ) : (
+                <Form.Item label={`${t("resolution")}: ${resolutionW} \u00d7 ${resolutionH} (${t("resolutionForPpd")})`}>
+                  <Selector
+                    columns={2}
+                    options={[
+                      ...resolutionPresets.map((preset) => ({
+                        value: preset,
+                        label: preset.replace("x", "\u00d7"),
+                      })),
+                      { value: CUSTOM_RESOLUTION_VALUE, label: t("custom") },
+                    ]}
+                    value={[
+                      resolutionPresets.includes(`${resolutionW}x${resolutionH}`)
+                        ? `${resolutionW}x${resolutionH}`
+                        : CUSTOM_RESOLUTION_VALUE,
+                    ]}
+                    onChange={(e: string[]) => {
+                      if (e[0] === CUSTOM_RESOLUTION_VALUE) {
+                        setShowCustomResolutionInput(true);
+                        return;
+                      }
+                      const [w, h] = e[0].split("x").map(Number);
+                      setResolutionW(w);
+                      setResolutionH(h);
+                    }}
+                  />
+                </Form.Item>
+              )}
+            </div>
+
             <Form.Item label={t("specialMode")}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <input
                   type="checkbox"
                   checked={gt7Mode}
-                  onChange={(e) => setGt7Mode(e.target.checked)}
+                  onChange={(e) => {
+                    setGt7Mode(e.target.checked);
+                    if (e.target.checked) setMinPpdMode(false);
+                  }}
                   style={{ width: '20px', height: '20px', cursor: 'pointer' }}
                 />
                 <span>{t("gt7CockpitMode")}</span>
               </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
+                <input
+                  type="checkbox"
+                  checked={minPpdMode}
+                  onChange={(e) => {
+                    setMinPpdMode(e.target.checked);
+                    if (e.target.checked) setGt7Mode(false);
+                  }}
+                  style={{ width: '20px', height: '20px', cursor: 'pointer' }}
+                />
+                <span>{t("minPpdMode")}</span>
+                <Input
+                  type="number"
+                  disabled={!minPpdMode}
+                  value={`${minPpd}`}
+                  onChange={(val) => setMinPpd(Math.min(Math.max(parseInt(val) || MIN_MIN_PPD, MIN_MIN_PPD), MAX_MIN_PPD))}
+                  style={{ width: '70px', '--text-align': 'center' }}
+                />
+                <span
+                  role="button"
+                  aria-label={t("ppd")}
+                  aria-expanded={showPpdHint}
+                  onClick={() => setShowPpdHint(!showPpdHint)}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '18px',
+                    height: '18px',
+                    flexShrink: 0,
+                    borderRadius: '50%',
+                    border: `1px solid ${HINT_ICON_COLOR}`,
+                    color: HINT_ICON_COLOR,
+                    fontSize: '12px',
+                    lineHeight: 1,
+                    cursor: 'pointer',
+                    userSelect: 'none',
+                  }}
+                >
+                  ?
+                </span>
+              </div>
+              {showPpdHint && (
+                <div style={{ marginTop: '8px', fontSize: '12px', color: '#999', lineHeight: '1.5', whiteSpace: 'pre-line' }}>
+                  {t("ppdHint")}
+                </div>
+              )}
             </Form.Item>
 
           </Form>
