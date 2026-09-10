@@ -63,6 +63,7 @@ i18n
           resolutionForPpd: "for PPD calculation",
           minPpdMode: "Minimum PPD Mode",
           limitedByMinPpd: "limited by min PPD",
+          guides: "Guides",
           ppdHint: "PPD (pixels per degree) = how many pixels fall within one degree of your view, a measure of sharpness.\n~20: VR-headset level (Steam Frame: 2160 px across 110°), pixels clearly visible\n30-40: pixels stop being noticeable at a normal seating distance\n60: retina level, the eye resolves about 1 arcminute",
           settings: "Settings",
           ...Object.entries(gameTranslations).reduce((acc, [key, value]) => {
@@ -100,6 +101,7 @@ i18n
           resolutionForPpd: "用于计算清晰度 PPD",
           minPpdMode: "最低PPD模式",
           limitedByMinPpd: "受最低PPD限制",
+          guides: "教程",
           ppdHint: "PPD（每度像素数）= 一度视角内有多少像素，衡量清晰度。\n约 20：VR 头显水平（Steam Frame：2160 像素覆盖 110°），像素感明显\n30–40：正常坐姿下基本看不出像素\n60：视网膜级别，人眼约能分辨 1 角分",
           settings: "设定",
           ...Object.entries(gameTranslations).reduce((acc, [key, value]) => {
@@ -137,6 +139,7 @@ i18n
           resolutionForPpd: "per il calcolo del PPD",
           minPpdMode: "Modalità PPD Minimo",
           limitedByMinPpd: "limitato dal PPD minimo",
+          guides: "Guide",
           ppdHint: "PPD (pixel per grado) = quanti pixel rientrano in un grado di campo visivo, una misura della nitidezza.\n~20: livello dei visori VR (Steam Frame: 2160 px su 110°), pixel ben visibili\n30-40: i pixel non si notano più alla normale distanza di seduta\n60: livello retina, l'occhio distingue circa 1 minuto d'arco",
           settings: "Impostazioni",
           ...Object.entries(gameTranslations).reduce((acc, [key, value]) => {
@@ -174,6 +177,7 @@ i18n
           resolutionForPpd: "für die PPD-Berechnung",
           minPpdMode: "Mindest-PPD-Modus",
           limitedByMinPpd: "durch Mindest-PPD begrenzt",
+          guides: "Anleitungen",
           ppdHint: "PPD (Pixel pro Grad) = wie viele Pixel auf ein Grad des Sichtfelds entfallen, ein Maß für die Schärfe.\n~20: VR-Headset-Niveau (Steam Frame: 2160 px auf 110°), Pixel deutlich sichtbar\n30-40: Pixel fallen im normalen Sitzabstand nicht mehr auf\n60: Retina-Niveau, das Auge löst rund 1 Bogenminute auf",
           settings: "Einstellungen",
           ...Object.entries(gameTranslations).reduce((acc, [key, value]) => {
@@ -211,6 +215,7 @@ i18n
           resolutionForPpd: "para el cálculo del PPD",
           minPpdMode: "Modo PPD Mínimo",
           limitedByMinPpd: "limitado por el PPD mínimo",
+          guides: "Guías",
           ppdHint: "PPD (píxeles por grado) = cuántos píxeles caben en un grado de campo visual, una medida de nitidez.\n~20: nivel de visores de RV (Steam Frame: 2160 px en 110°), píxeles claramente visibles\n30-40: los píxeles dejan de notarse a una distancia de asiento normal\n60: nivel retina, el ojo distingue alrededor de 1 minuto de arco",
           settings: "Ajustes",
           ...Object.entries(gameTranslations).reduce((acc, [key, value]) => {
@@ -248,6 +253,7 @@ i18n
           resolutionForPpd: "pour le calcul du PPD",
           minPpdMode: "Mode PPD Minimum",
           limitedByMinPpd: "limité par le PPD minimum",
+          guides: "Guides",
           ppdHint: "PPD (pixels par degré) = combien de pixels tiennent dans un degré de champ de vision, une mesure de netteté.\n~20 : niveau des casques VR (Steam Frame : 2160 px sur 110°), pixels bien visibles\n30-40 : les pixels ne se remarquent plus à une distance d'assise normale\n60 : niveau rétine, l'œil distingue environ 1 minute d'arc",
           settings: "Réglages",
           ...Object.entries(gameTranslations).reduce((acc, [key, value]) => {
@@ -285,6 +291,7 @@ i18n
           resolutionForPpd: "PPD 計算用",
           minPpdMode: "最低PPDモード",
           limitedByMinPpd: "最低PPDによる制限",
+          guides: "ガイド",
           ppdHint: "PPD（1度あたりのピクセル数）= 視野1度に何ピクセル入るかを示す鮮明さの指標。\n約20：VRヘッドセット相当（Steam Frame: 110°に2160ピクセル）、ピクセルがはっきり見える\n30〜40：通常の着座距離ではピクセルが目立たない\n60：網膜レベル、人間の目は約1分角を分解できる",
           settings: "設定",
           ...Object.entries(gameTranslations).reduce((acc, [key, value]) => {

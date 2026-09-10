@@ -419,3 +419,10 @@
   background-color: #ff588d;
   border-color: rgba(160, 0, 0, 0.5);
 }
+
+/* Link from the calculator to the written guides. It borrows antd-mobile's
+   .adm-button classes for the visuals, so only the anchor-specific bits are
+   needed here. */
+.guidesLink {
+  text-decoration: none;
+}

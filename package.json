@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "node scripts/generate-sitemap.mjs && next build && node scripts/ensure-dir-index.mjs",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "sitemap": "node scripts/generate-sitemap.mjs"
   },
   "dependencies": {
     "@next/third-parties": "^14.2.28",
@@ -23,6 +24,8 @@
     "@types/react-dom": "18.0.6",
     "eslint": "^8.57.0",
     "eslint-config-next": "^14.2.28",
+    "gray-matter": "^4.0.3",
+    "marked": "^18.0.12",
     "typescript": "^5.0.0"
   }
 }

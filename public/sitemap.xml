@@ -3,7 +3,7 @@
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
     <loc>https://fovcalc.xusf.xyz/</loc>
-    <lastmod>2026-03-27</lastmod>
+    <lastmod>2026-09-10</lastmod>
     <changefreq>monthly</changefreq>
     <priority>1.0</priority>
     <xhtml:link rel="alternate" hreflang="x-default" href="https://fovcalc.xusf.xyz/"/>
@@ -14,5 +14,131 @@
     <xhtml:link rel="alternate" hreflang="es" href="https://fovcalc.xusf.xyz/?lang=es"/>
     <xhtml:link rel="alternate" hreflang="fr" href="https://fovcalc.xusf.xyz/?lang=fr"/>
     <xhtml:link rel="alternate" hreflang="ja" href="https://fovcalc.xusf.xyz/?lang=ja"/>
+  </url>
+  <url>
+    <loc>https://fovcalc.xusf.xyz/guide</loc>
+    <lastmod>2026-09-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://fovcalc.xusf.xyz/guide"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://fovcalc.xusf.xyz/zh/guide"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://fovcalc.xusf.xyz/guide"/>
+  </url>
+  <url>
+    <loc>https://fovcalc.xusf.xyz/guide/curved-monitor-fov</loc>
+    <lastmod>2026-09-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://fovcalc.xusf.xyz/guide/curved-monitor-fov"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://fovcalc.xusf.xyz/zh/guide/curved-monitor-fov"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://fovcalc.xusf.xyz/guide/curved-monitor-fov"/>
+  </url>
+  <url>
+    <loc>https://fovcalc.xusf.xyz/guide/game-fov-settings</loc>
+    <lastmod>2026-09-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://fovcalc.xusf.xyz/guide/game-fov-settings"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://fovcalc.xusf.xyz/zh/guide/game-fov-settings"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://fovcalc.xusf.xyz/guide/game-fov-settings"/>
+  </url>
+  <url>
+    <loc>https://fovcalc.xusf.xyz/guide/how-to-calculate-fov</loc>
+    <lastmod>2026-09-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://fovcalc.xusf.xyz/guide/how-to-calculate-fov"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://fovcalc.xusf.xyz/zh/guide/how-to-calculate-fov"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://fovcalc.xusf.xyz/guide/how-to-calculate-fov"/>
+  </url>
+  <url>
+    <loc>https://fovcalc.xusf.xyz/guide/ppd-and-viewing-distance</loc>
+    <lastmod>2026-09-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://fovcalc.xusf.xyz/guide/ppd-and-viewing-distance"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://fovcalc.xusf.xyz/zh/guide/ppd-and-viewing-distance"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://fovcalc.xusf.xyz/guide/ppd-and-viewing-distance"/>
+  </url>
+  <url>
+    <loc>https://fovcalc.xusf.xyz/guide/single-monitor-fov</loc>
+    <lastmod>2026-09-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://fovcalc.xusf.xyz/guide/single-monitor-fov"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://fovcalc.xusf.xyz/zh/guide/single-monitor-fov"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://fovcalc.xusf.xyz/guide/single-monitor-fov"/>
+  </url>
+  <url>
+    <loc>https://fovcalc.xusf.xyz/guide/triple-monitor-fov</loc>
+    <lastmod>2026-09-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://fovcalc.xusf.xyz/guide/triple-monitor-fov"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://fovcalc.xusf.xyz/zh/guide/triple-monitor-fov"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://fovcalc.xusf.xyz/guide/triple-monitor-fov"/>
+  </url>
+  <url>
+    <loc>https://fovcalc.xusf.xyz/zh/guide</loc>
+    <lastmod>2026-09-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://fovcalc.xusf.xyz/guide"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://fovcalc.xusf.xyz/zh/guide"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://fovcalc.xusf.xyz/guide"/>
+  </url>
+  <url>
+    <loc>https://fovcalc.xusf.xyz/zh/guide/curved-monitor-fov</loc>
+    <lastmod>2026-09-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://fovcalc.xusf.xyz/guide/curved-monitor-fov"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://fovcalc.xusf.xyz/zh/guide/curved-monitor-fov"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://fovcalc.xusf.xyz/guide/curved-monitor-fov"/>
+  </url>
+  <url>
+    <loc>https://fovcalc.xusf.xyz/zh/guide/game-fov-settings</loc>
+    <lastmod>2026-09-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://fovcalc.xusf.xyz/guide/game-fov-settings"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://fovcalc.xusf.xyz/zh/guide/game-fov-settings"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://fovcalc.xusf.xyz/guide/game-fov-settings"/>
+  </url>
+  <url>
+    <loc>https://fovcalc.xusf.xyz/zh/guide/how-to-calculate-fov</loc>
+    <lastmod>2026-09-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://fovcalc.xusf.xyz/guide/how-to-calculate-fov"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://fovcalc.xusf.xyz/zh/guide/how-to-calculate-fov"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://fovcalc.xusf.xyz/guide/how-to-calculate-fov"/>
+  </url>
+  <url>
+    <loc>https://fovcalc.xusf.xyz/zh/guide/ppd-and-viewing-distance</loc>
+    <lastmod>2026-09-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://fovcalc.xusf.xyz/guide/ppd-and-viewing-distance"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://fovcalc.xusf.xyz/zh/guide/ppd-and-viewing-distance"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://fovcalc.xusf.xyz/guide/ppd-and-viewing-distance"/>
+  </url>
+  <url>
+    <loc>https://fovcalc.xusf.xyz/zh/guide/single-monitor-fov</loc>
+    <lastmod>2026-09-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://fovcalc.xusf.xyz/guide/single-monitor-fov"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://fovcalc.xusf.xyz/zh/guide/single-monitor-fov"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://fovcalc.xusf.xyz/guide/single-monitor-fov"/>
+  </url>
+  <url>
+    <loc>https://fovcalc.xusf.xyz/zh/guide/triple-monitor-fov</loc>
+    <lastmod>2026-09-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://fovcalc.xusf.xyz/guide/triple-monitor-fov"/>
+    <xhtml:link rel="alternate" hreflang="zh-CN" href="https://fovcalc.xusf.xyz/zh/guide/triple-monitor-fov"/>
+    <xhtml:link rel="alternate" hreflang="x-default" href="https://fovcalc.xusf.xyz/guide/triple-monitor-fov"/>
   </url>
 </urlset>

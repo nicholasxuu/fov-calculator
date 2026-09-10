@@ -1512,6 +1512,16 @@ const Home: NextPage = () => {
       </div>
 
       <div className={styles.headerActions}>
+        {/* Plain anchor, not next/link: next/link would prefetch the guide route's
+            chunks from the calculator page. A bare <a> keeps the two independent.
+            Wearing antd-mobile's own global button classes so it matches the two
+            real Buttons beside it exactly, at no extra CSS cost. */}
+        <a
+          className={`adm-button adm-button-primary adm-button-fill-outline ${styles.guidesLink}`}
+          href={language === 'cn' ? '/zh/guide' : '/guide'}
+        >
+          {t("guides")}
+        </a>
         <Button onClick={handleShare} color='primary' fill='outline'>{t("share")}</Button>
         <Button onClick={handleExportCanvasAsImage} color='primary' fill='outline'>{t("export_canvas")}</Button>
       </div>
