@@ -105,13 +105,14 @@
   width: 360px;
 }
 
-/* Wide screens: an ordinary column next to the canvas.
-   Narrow screens (see media query below): a translucent full-screen overlay. */
+/* >= 960px: an ordinary column next to the canvas (display: contents makes this
+   wrapper transparent, so .mainform stays a direct flex child of .body).
+   Below that: a fixed overlay — full-screen on phones, a right drawer in between. */
 .settingsPanel {
   display: contents;
 }
 
-/* Floating settings button, narrow screens only. */
+/* Floating settings button, overlay layouts only. */
 .fab {
   display: none;
   position: fixed;
@@ -130,12 +131,26 @@
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
 }
 
-@media (max-width: 600px) {
+/* Overlay mode. 960px is where the 600px canvas and the 360px form stop fitting
+   side by side; below it the form used to wrap under the canvas with no way to
+   pop it open. The panel itself spans the viewport so clicking beside the form
+   closes it; the translucent plate lives on .mainform. */
+@media (max-width: 959px) {
   .settingsPanel {
     display: none;
     position: fixed;
     inset: 0;
     z-index: 100;
+  }
+
+  .settingsPanelOpen {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .mainform {
+    width: min(400px, 85vw);
+    max-height: 100%;
     overflow-y: auto;
     padding: 1rem 1rem 88px;
     background-color: rgba(255, 255, 255, 0.75);
@@ -143,15 +158,7 @@
     -webkit-backdrop-filter: blur(2px);
   }
 
-  .settingsPanelOpen {
-    display: block;
-  }
-
-  .mainform {
-    width: 100%;
-  }
-
-  /* The overlay itself stays see-through so the canvas reads underneath;
+  /* The panel stays see-through so the canvas reads underneath;
      each control gets its own near-opaque plate so labels stay legible. */
   .settingsPanel :global(.adm-list-item) {
     background-color: rgba(255, 255, 255, 0.88);
@@ -168,6 +175,13 @@
 
   .fab {
     display: block;
+  }
+}
+
+/* Phones: the drawer widens to the whole screen. */
+@media (max-width: 600px) {
+  .mainform {
+    width: 100%;
   }
 }
 

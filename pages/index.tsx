@@ -20,8 +20,12 @@ import { parseShareUrl, syncQueryToConfig } from '../utils/shareUrl';
 // ===== 画布和显示相关常量 =====
 const CANVAS_WIDTH = 600;
 const CANVAS_HEIGHT = 578;
-// 与 Home.module.css 里的移动端断点保持一致
-const NARROW_SCREEN_MAX_WIDTH = 600;
+// 两个断点，都要与 Home.module.css 保持一致：
+// 画布裁剪 / 字号放大只在真·手机宽度生效，中间尺寸宽度够用，不该裁。
+const MOBILE_CANVAS_MAX_WIDTH = 600;
+// 设置面板改用弹出层的断点。画布 600 + 表单 360 并排需要 960，
+// 低于这个宽度表单会被挤到画布下面，所以一律走弹出层。
+const OVERLAY_MAX_WIDTH = 959;
 // 窄屏时把画布右侧的车尾裁掉，核心区域（显示器 + 驾驶员）相应放大约 1.36 倍。
 // 头部固定画在 x=333，440 还能留出约 100px 车身；再窄就只剩显示器孤零零一条了。
 const MOBILE_CANVAS_WIDTH = 440;
@@ -940,6 +944,7 @@ const Home: NextPage = () => {
   // 只有滚回触发线以上才会重新上膛，避免在底部反复弹出
   const autoOpenArmed = useRef(true);
   const [isNarrowScreen, setIsNarrowScreen] = useState(false);
+  const [isOverlayLayout, setIsOverlayLayout] = useState(false);
   // canvas 的实际 CSS 宽度，变化时需要按新的缩放比重算字号并重绘
   const [canvasCssWidth, setCanvasCssWidth] = useState(0);
   const [minPpdMode, setMinPpdMode] = useStickyState(false, "minPpdMode", urlConfig.minPpdMode);
@@ -1288,13 +1293,21 @@ const Home: NextPage = () => {
     canvasCssWidth,
   ])
 
-  // 跟踪窄屏断点，与 Home.module.css 用同一个阈值
+  // 跟踪两个断点，与 Home.module.css 用同一组阈值
   useEffect(() => {
-    const query = window.matchMedia(`(max-width: ${NARROW_SCREEN_MAX_WIDTH}px)`);
-    const sync = () => setIsNarrowScreen(query.matches);
-    sync();
-    query.addEventListener("change", sync);
-    return () => query.removeEventListener("change", sync);
+    const watch = (maxWidth: number, apply: (matches: boolean) => void) => {
+      const query = window.matchMedia(`(max-width: ${maxWidth}px)`);
+      const sync = () => apply(query.matches);
+      sync();
+      query.addEventListener("change", sync);
+      return () => query.removeEventListener("change", sync);
+    };
+    const stopCanvasWatch = watch(MOBILE_CANVAS_MAX_WIDTH, setIsNarrowScreen);
+    const stopOverlayWatch = watch(OVERLAY_MAX_WIDTH, setIsOverlayLayout);
+    return () => {
+      stopCanvasWatch();
+      stopOverlayWatch();
+    };
   }, []);
 
   // 画布显示宽度变化（旋转屏幕、缩放窗口）时重绘，让字号跟着调整
@@ -1333,14 +1346,14 @@ const Home: NextPage = () => {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [showSettings]);
 
-  // 从窄屏切回宽屏时，overlay 不该继续挂着
+  // 宽到能并排显示表单时，overlay 不该继续挂着
   useEffect(() => {
-    if (!isNarrowScreen) setSettingsMode(null);
-  }, [isNarrowScreen]);
+    if (!isOverlayLayout) setSettingsMode(null);
+  }, [isOverlayLayout]);
 
   // 滚过画布、或滚到页面底部时自动弹出设置面板
   useEffect(() => {
-    if (!isNarrowScreen) return;
+    if (!isOverlayLayout) return;
 
     let frame = 0;
     const evaluate = () => {
@@ -1382,7 +1395,7 @@ const Home: NextPage = () => {
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
     };
-  }, [isNarrowScreen]);
+  }, [isOverlayLayout]);
 
   const handleExportCanvasAsImage = () => {
     const canvas = document.getElementById('fov-preview') as HTMLCanvasElement;
