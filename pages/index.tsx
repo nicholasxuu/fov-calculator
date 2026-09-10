@@ -20,12 +20,19 @@ import { parseShareUrl, syncQueryToConfig } from '../utils/shareUrl';
 // ===== 画布和显示相关常量 =====
 const CANVAS_WIDTH = 600;
 const CANVAS_HEIGHT = 578;
-// 两个断点，都要与 Home.module.css 保持一致：
-// 画布裁剪 / 字号放大只在真·手机宽度生效，中间尺寸宽度够用，不该裁。
-const MOBILE_CANVAS_MAX_WIDTH = 600;
-// 设置面板改用弹出层的断点。画布 600 + 表单 360 并排需要 960，
-// 低于这个宽度表单会被挤到画布下面，所以一律走弹出层。
-const OVERLAY_MAX_WIDTH = 959;
+// 布局断点，都要与 Home.module.css 保持一致。
+// 画布 600 + 表单 360 并排需要 960，低于这个宽度表单会被挤到画布下面，
+// 所以改用「画布 + 设置区」分栏，由 FAB 开关。
+const SIDE_BY_SIDE_MIN_WIDTH = 960;
+const SETTINGS_DRAWER_WIDTH = 400;      // 左右分栏时设置区的宽度
+const MIN_CANVAS_PANE_WIDTH = 390;      // 画布那一栏至少要留出的宽度（手机宽度）
+// 左右分栏后画布栏保不住手机宽度时，改成上下分栏
+const SPLIT_LAYOUT_MAX_WIDTH = MIN_CANVAS_PANE_WIDTH + SETTINGS_DRAWER_WIDTH - 1;
+
+// ===== 上下分栏的分割线 =====
+const DEFAULT_SPLIT_RATIO = 0.6;        // 画布占的高度比例
+const MIN_SPLIT_RATIO = 0.25;
+const MAX_SPLIT_RATIO = 0.8;
 // 窄屏时把画布右侧的车尾裁掉，核心区域（显示器 + 驾驶员）相应放大约 1.36 倍。
 // 头部固定画在 x=333，440 还能留出约 100px 车身；再窄就只剩显示器孤零零一条了。
 const MOBILE_CANVAS_WIDTH = 440;
@@ -943,8 +950,14 @@ const Home: NextPage = () => {
   // 自动弹出的「上膛」标记：弹过一次或被手动关掉后落下，
   // 只有滚回触发线以上才会重新上膛，避免在底部反复弹出
   const autoOpenArmed = useRef(true);
-  const [isNarrowScreen, setIsNarrowScreen] = useState(false);
-  const [isOverlayLayout, setIsOverlayLayout] = useState(false);
+  // 'side' = 表单并排在右；'drawer' = 左右分栏；'split' = 上下分栏
+  const [layoutMode, setLayoutMode] = useState<"side" | "drawer" | "split">("side");
+  const isOverlayLayout = layoutMode !== "side";
+  // 分栏外壳生效中。分栏时 header 会挪进画布那一栏跟画布共用滚动区，
+  // 免得固定在顶部白占本来就紧张的竖向空间。
+  const isSplitShell = showSettings && isOverlayLayout;
+  const [splitRatio, setSplitRatio] = useStickyState(DEFAULT_SPLIT_RATIO, "splitRatio");
+  const bodyRef = useRef<HTMLDivElement>(null);
   // canvas 的实际 CSS 宽度，变化时需要按新的缩放比重算字号并重绘
   const [canvasCssWidth, setCanvasCssWidth] = useState(0);
   const [minPpdMode, setMinPpdMode] = useStickyState(false, "minPpdMode", urlConfig.minPpdMode);
@@ -1107,9 +1120,20 @@ const Home: NextPage = () => {
         return;
       }
 
-      // 窄屏裁掉右侧车尾，只保留核心区域；上下不裁，世界坐标不变，
-      // 所以画在 x > bitmapWidth 的内容自然落在画布外，不需要任何平移。
-      const bitmapWidth = isNarrowScreen ? MOBILE_CANVAS_WIDTH : CANVAS_WIDTH;
+      // 画布所在栏的宽度。量的是 .body 而不是画布自己：.display 的宽度在并排布局下
+      // 是被内容撑出来的，而内容的固有宽度正是画布位图的宽度，拿 canvas.clientWidth
+      // 判断会自锁 —— 量到一次偏窄就裁到 440，固有宽度随之变 440，永远退不回 600。
+      // .body 是 width:100%，宽度确定，不受位图影响。
+      const bodyWidth = bodyRef.current?.clientWidth || window.innerWidth;
+      const paneWidth = isSplitShell && layoutMode === "drawer"
+        ? bodyWidth - SETTINGS_DRAWER_WIDTH   // 左右分栏，右边被设置栏占掉
+        : bodyWidth;                          // 上下分栏或面板收起时画布独占整行
+
+      // 栏比整幅位图还窄才值得裁：裁掉右侧车尾，核心区域相应放大。
+      // 上下不裁，世界坐标不变，所以画在 x > bitmapWidth 的内容自然落在画布外，
+      // 不需要任何平移。并排布局下画布栏恒为 600，直接排除，不参与测量。
+      const shouldCropCanvas = layoutMode !== "side" && paneWidth < CANVAS_WIDTH;
+      const bitmapWidth = shouldCropCanvas ? MOBILE_CANVAS_WIDTH : CANVAS_WIDTH;
       if (canvasEl.width !== bitmapWidth) {
         canvasEl.width = bitmapWidth;
       }
@@ -1289,8 +1313,9 @@ const Home: NextPage = () => {
     tripleMonitorAngle,
     resolutionW,
     language,
-    isNarrowScreen,
     canvasCssWidth,
+    layoutMode,
+    isSplitShell,
   ])
 
   // 跟踪两个断点，与 Home.module.css 用同一组阈值
@@ -1302,11 +1327,21 @@ const Home: NextPage = () => {
       query.addEventListener("change", sync);
       return () => query.removeEventListener("change", sync);
     };
-    const stopCanvasWatch = watch(MOBILE_CANVAS_MAX_WIDTH, setIsNarrowScreen);
-    const stopOverlayWatch = watch(OVERLAY_MAX_WIDTH, setIsOverlayLayout);
+    const stopSideWatch = watch(SIDE_BY_SIDE_MIN_WIDTH - 1, (belowSideBySide) => {
+      setLayoutMode(belowSideBySide ? (window.innerWidth <= SPLIT_LAYOUT_MAX_WIDTH ? "split" : "drawer") : "side");
+    });
+    const stopSplitWatch = watch(SPLIT_LAYOUT_MAX_WIDTH, () => {
+      setLayoutMode(
+        window.innerWidth >= SIDE_BY_SIDE_MIN_WIDTH
+          ? "side"
+          : window.innerWidth <= SPLIT_LAYOUT_MAX_WIDTH
+            ? "split"
+            : "drawer",
+      );
+    });
     return () => {
-      stopCanvasWatch();
-      stopOverlayWatch();
+      stopSideWatch();
+      stopSplitWatch();
     };
   }, []);
 
@@ -1319,23 +1354,50 @@ const Home: NextPage = () => {
     return () => observer.disconnect();
   }, []);
 
+  // 拖动分割线：拖的过程中直接改 CSS 变量，不走 React 重渲染（一秒 60 次太浪费），
+  // 松手时才把最终比例写回 state 持久化。
+  const handleSplitPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    const body = bodyRef.current;
+    if (!body) return;
+    e.preventDefault();
+    const handle = e.currentTarget;
+    handle.setPointerCapture(e.pointerId);
+
+    let latestRatio = splitRatio;
+    const onMove = (moveEvent: PointerEvent) => {
+      const rect = body.getBoundingClientRect();
+      if (rect.height === 0) return;
+      const raw = (moveEvent.clientY - rect.top) / rect.height;
+      latestRatio = Math.min(Math.max(raw, MIN_SPLIT_RATIO), MAX_SPLIT_RATIO);
+      body.style.setProperty("--split-ratio", `${latestRatio}`);
+    };
+    const onUp = () => {
+      handle.removeEventListener("pointermove", onMove);
+      handle.removeEventListener("pointerup", onUp);
+      handle.removeEventListener("pointercancel", onUp);
+      setSplitRatio(latestRatio);
+    };
+    handle.addEventListener("pointermove", onMove);
+    handle.addEventListener("pointerup", onUp);
+    handle.addEventListener("pointercancel", onUp);
+  };
+
   const closeSettings = () => {
     // 手动关闭后落膛，否则停在底部时一关就立刻又被自动弹出来
     autoOpenArmed.current = false;
     setSettingsMode(null);
   };
 
-  // 手动打开时滚到顶部并锁住页面滚动，保证画布在视口里。
-  // 自动弹出不走这段：锁了滚动就没法靠往回滚把它关掉。
+  // 分栏模式下整页变成固定高度的两栏外壳，页面本身不再滚动，
+  // 所以要记住进入前的滚动位置，关闭时还原，免得每次关掉都被弹回顶部。
+  const scrollBeforeSplit = useRef(0);
   useEffect(() => {
-    if (settingsMode !== "manual") return;
-    window.scrollTo(0, 0);
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    if (!showSettings || !isOverlayLayout) return;
+    scrollBeforeSplit.current = window.scrollY;
     return () => {
-      document.body.style.overflow = previousOverflow;
+      window.scrollTo(0, scrollBeforeSplit.current);
     };
-  }, [settingsMode]);
+  }, [showSettings, isOverlayLayout]);
 
   useEffect(() => {
     if (!showSettings) return;
@@ -1428,8 +1490,36 @@ const Home: NextPage = () => {
     );
   });
 
+  const header = (
+        <div className={styles.header}>
+      <div className={styles.headerLanguage}>
+        <Selector
+          columns={4}
+          options={
+            [
+              { value: "en", label: "English" },
+              { value: "cn", label: "中文" },
+              { value: "it", label: "Italiano" },
+              { value: "de", label: "Deutsch" },
+              { value: "es", label: "Español" },
+              { value: "fr", label: "Français" },
+              { value: "ja", label: "日本語" },
+            ]
+          }
+          defaultValue={[language]}
+          onChange={(e) => { setLanguage(e[0]) }}
+        />
+      </div>
+
+      <div className={styles.headerActions}>
+        <Button onClick={handleShare} color='primary' fill='outline'>{t("share")}</Button>
+        <Button onClick={handleExportCanvasAsImage} color='primary' fill='outline'>{t("export_canvas")}</Button>
+      </div>
+    </div>
+  );
+
   return (
-    <div className={styles.container}>
+    <div className={`${styles.container}${isSplitShell ? ` ${styles.containerSplit}` : ''}`}>
       <Head>
         <title>FOV Calculator - Sim Racing Field of View Calculator for Single & Triple Monitor Setup</title>
         <meta name="description" content="Free FOV calculator for sim racing cockpits. Calculate optimal field of view for single monitor, triple monitor, curved & flat screens. Supports iRacing, Assetto Corsa, ACC, F1, and 50+ racing games." />
@@ -1569,35 +1659,15 @@ const Home: NextPage = () => {
       <GoogleAnalytics gaId="G-GN8YEE6FBQ" />
 
       <main className={styles.main}>
-        <div className={styles.header}>
-          <div className={styles.headerLanguage}>
-            <Selector
-              columns={4}
-              options={
-                [
-                  { value: "en", label: "English" },
-                  { value: "cn", label: "中文" },
-                  { value: "it", label: "Italiano" },
-                  { value: "de", label: "Deutsch" },
-                  { value: "es", label: "Español" },
-                  { value: "fr", label: "Français" },
-                  { value: "ja", label: "日本語" },
-                ]
-              }
-              defaultValue={[language]}
-              onChange={(e) => { setLanguage(e[0]) }}
-            />
-          </div>
+        {!isSplitShell && header}
 
-          <div className={styles.headerActions}>
-            <Button onClick={handleShare} color='primary' fill='outline'>{t("share")}</Button>
-            <Button onClick={handleExportCanvasAsImage} color='primary' fill='outline'>{t("export_canvas")}</Button>
-          </div>
-        </div>
-
-
-        <div className={styles.body}>
+        <div
+          ref={bodyRef}
+          className={`${styles.body}${isSplitShell ? ` ${styles.bodySplit}` : ''}${layoutMode === 'split' ? ` ${styles.bodySplitVertical}` : ''}`}
+          style={{ ['--split-ratio' as any]: splitRatio }}
+        >
           <div className={styles.display}>
+            {isSplitShell && header}
             <canvas id="fov-preview" className={styles.canvas} ref={canvas} width={CANVAS_WIDTH} height={CANVAS_HEIGHT}></canvas>
             <div className={styles.gameFovData}>
               {t("horizontalFov")} {gameFovs.hFov}°<br />
@@ -1635,10 +1705,17 @@ const Home: NextPage = () => {
           </div>
 
 
-          <div
-            className={`${styles.settingsPanel}${showSettings ? ` ${styles.settingsPanelOpen}` : ''}`}
-            onClick={(e) => { if (e.target === e.currentTarget) closeSettings() }}
-          >
+          {showSettings && layoutMode === 'split' && (
+            <div
+              className={styles.splitHandle}
+              role="separator"
+              aria-orientation="horizontal"
+              aria-label={t("settings")}
+              onPointerDown={handleSplitPointerDown}
+            />
+          )}
+
+          <div className={`${styles.settingsPanel}${showSettings ? ` ${styles.settingsPanelOpen}` : ''}`}>
           <Form
             className={styles.mainform}
             name="basic"
