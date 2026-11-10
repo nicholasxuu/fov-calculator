@@ -6,74 +6,21 @@
 }
 
 .header {
-  display: flex;
-  padding: 1rem;
-  border-bottom: 1px solid #eaeaea;
-  align-items: center;
-  gap: 1rem;
+  /* Preserve the removed toolbar's height, including its former border. */
+  padding-top: 72.8px;
 }
 
-.headerLanguage {
-  flex: 1 1 auto;
-  display: flex;
-  justify-content: center;
-  min-width: 0;
-}
-
-/* 7 language options → default is columns={4} = 2 rows.
-   When the header has enough room, collapse to a single row of 7.
-   antd-mobile's Grid sets --columns inline, so override grid-template-columns
-   directly (inline styles only set the var; this rule wins on specificity). */
-@media (min-width: 650px) {
-  .headerLanguage :global(.adm-selector) {
-    --padding: 4px 8px;
-    --gap: 4px;
+@media (min-width: 601px) and (max-width: 649px) {
+  .header {
+    /* The former language selector occupied two rows at this width. */
+    padding-top: 115px;
   }
-  .headerLanguage :global(.adm-grid) {
-    grid-template-columns: repeat(7, minmax(0, 1fr));
-  }
-}
-
-.headerActions {
-  display: flex;
-  gap: 8px;
-  flex-shrink: 0;
 }
 
 @media (max-width: 600px) {
   .header {
-    align-items: stretch;
-    padding: 0.5rem;
-    gap: 0.5rem;
-  }
-
-  .headerLanguage {
-    flex: 3 1 0;
-    min-width: 0;
-    justify-content: flex-start;
-    align-self: center;
-  }
-
-  .headerActions {
-    flex: 1 1 0;
-    flex-direction: column;
-    max-width: 25%;
-    gap: 4px;
-  }
-
-  .headerActions > button {
-    width: 100%;
-    font-size: clamp(10px, 2.8vw, 13px);
-    padding: 4px 6px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .headerLanguage :global(.adm-selector) {
-    --padding: 4px 8px;
-    --gap: 4px;
-    font-size: clamp(10px, 2.8vw, 13px);
+    /* Former two-button column: 2 lines + padding, gap and container space. */
+    padding-top: calc(clamp(28px, 7.84vw, 36.4px) + 41px);
   }
 }
 
@@ -418,11 +365,4 @@
 .slider__thumb:hover {
   background-color: #ff588d;
   border-color: rgba(160, 0, 0, 0.5);
-}
-
-/* Link from the calculator to the written guides. It borrows antd-mobile's
-   .adm-button classes for the visuals, so only the anchor-specific bits are
-   needed here. */
-.guidesLink {
-  text-decoration: none;
 }

@@ -49,5 +49,3 @@ Allow: /
 
 User-agent: Meta-ExternalAgent
 Allow: /
-
-Sitemap: https://fovcalc.xusf.xyz/sitemap.xml

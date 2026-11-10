@@ -3,12 +3,12 @@ import dynamic from 'next/dynamic'
 import type { NextPage } from 'next'
 import Head from 'next/head'
 import { useEffect, useState, useRef } from 'react'
-import { Selector, Form, Slider, Button, Input, Toast } from 'antd-mobile';
+import { Selector, Form, Slider, Button, Input } from 'antd-mobile';
 import { GoogleAnalytics } from '@next/third-parties/google'
 
 
 import { useTranslation } from 'react-i18next';
-import i18n from '../src/i18n';
+import '../src/i18n';
 import styles from '../styles/Home.module.css'
 import { t } from 'i18next';
 import React from 'react';
@@ -239,9 +239,8 @@ const getImage = (src: string) => new Promise<HTMLImageElement>((resolve) => {
 const loadImage = async (ctx: CanvasRenderingContext2D, scale: number = 1) => {
   console.log('load images', 'scale:', scale)
 
-  const currPath = `${window.location.protocol}//${window.location.hostname}:${window.location.port}/${window.location.pathname}`;
-  const topImage = await getImage(`${currPath}/assets/images/brz_top.jpg`)
-  const sideImage = await getImage(`${currPath}/assets/images/brz_side.jpg`)
+  const topImage = await getImage('./assets/images/brz_top.jpg')
+  const sideImage = await getImage('./assets/images/brz_side.jpg')
 
   // fill canvas with white background
   ctx.globalAlpha = ALPHA_OPAQUE;
@@ -898,23 +897,6 @@ const Home: NextPage = () => {
     }
   };
 
-  // 根据浏览器语言自动选择最合适的语言
-  const detectBrowserLanguage = (): string => {
-    const browserLang = navigator.language.toLowerCase();
-
-    // 精确匹配
-    if (browserLang === 'zh-cn' || browserLang === 'zh') return 'cn';
-    if (browserLang === 'en' || browserLang.startsWith('en-')) return 'en';
-    if (browserLang === 'it' || browserLang.startsWith('it-')) return 'it';
-    if (browserLang === 'de' || browserLang.startsWith('de-')) return 'de';
-    if (browserLang === 'es' || browserLang.startsWith('es-')) return 'es';
-    if (browserLang === 'fr' || browserLang.startsWith('fr-')) return 'fr';
-    if (browserLang === 'ja' || browserLang.startsWith('ja-')) return 'ja';
-
-    // 默认返回英语
-    return 'en';
-  };
-
   // Parse share-URL params once on first render. If any are present, freeze
   // localStorage writes for this session so the share link does not pollute
   // the visitor's saved config.
@@ -926,7 +908,6 @@ const Home: NextPage = () => {
     return cfg;
   }, []);
 
-  const [language, setLanguage] = useStickyState(detectBrowserLanguage(), "language", urlConfig.language);
 
   const [distanceToScreen, setDistanceToScreen] = useStickyState(70, "distanceToScreen", urlConfig.distanceToScreen);
   const [screenSize, setScreenSize] = useStickyState(32, "screenSize", urlConfig.screenSize);
@@ -977,10 +958,6 @@ const Home: NextPage = () => {
     return initialFovs;
   });
 
-  useEffect(() => {
-    i18n.changeLanguage(language)
-  }, [language]);
-
   // Keep the URL query string in sync with the current config so the address
   // bar is always a shareable link. Uses replaceState (no history entries).
   // Debounced 200ms — browsers throttle replaceState, and calling it every
@@ -996,7 +973,6 @@ const Home: NextPage = () => {
         isTripleMonitor,
         tripleMonitorAngle,
         gt7Mode,
-        language,
         resolutionW,
         resolutionH,
         minPpdMode,
@@ -1013,7 +989,6 @@ const Home: NextPage = () => {
     isTripleMonitor,
     tripleMonitorAngle,
     gt7Mode,
-    language,
     resolutionW,
     resolutionH,
     minPpdMode,
@@ -1312,7 +1287,6 @@ const Home: NextPage = () => {
     isTripleMonitor,
     tripleMonitorAngle,
     resolutionW,
-    language,
     canvasCssWidth,
     layoutMode,
     isSplitShell,
@@ -1459,27 +1433,6 @@ const Home: NextPage = () => {
     };
   }, [isOverlayLayout]);
 
-  const handleExportCanvasAsImage = () => {
-    const canvas = document.getElementById('fov-preview') as HTMLCanvasElement;
-    const dataURL = canvas.toDataURL('image/jpeg');
-    const a = document.createElement('a');
-    a.href = dataURL;
-    a.download = `fov-preview-${screenSize}${isTripleMonitor ? "x3" : ""}-${tripleMonitorAngle}.jpeg`;
-    a.click();
-  }
-
-  const handleShare = async () => {
-    const url = window.location.href;
-    try {
-      await navigator.clipboard.writeText(url);
-      Toast.show({ content: t("shareLinkCopied"), position: 'top' });
-    } catch (e) {
-      // Clipboard API failed (insecure context, permission denied, etc.).
-      // Fall back to prompt so the user can still copy manually.
-      window.prompt(t("shareLinkCopied"), url);
-    }
-  }
-
   // 过滤游戏列表
   const filteredGames = Object.entries(GameList).filter(([_, gameInfo]) => {
     if (!searchText) return true;
@@ -1490,53 +1443,18 @@ const Home: NextPage = () => {
     );
   });
 
-  const header = (
-        <div className={styles.header}>
-      <div className={styles.headerLanguage}>
-        <Selector
-          columns={4}
-          options={
-            [
-              { value: "en", label: "English" },
-              { value: "cn", label: "中文" },
-              { value: "it", label: "Italiano" },
-              { value: "de", label: "Deutsch" },
-              { value: "es", label: "Español" },
-              { value: "fr", label: "Français" },
-              { value: "ja", label: "日本語" },
-            ]
-          }
-          defaultValue={[language]}
-          onChange={(e) => { setLanguage(e[0]) }}
-        />
-      </div>
-
-      <div className={styles.headerActions}>
-        {/* Plain anchor, not next/link: next/link would prefetch the guide route's
-            chunks from the calculator page. A bare <a> keeps the two independent.
-            Wearing antd-mobile's own global button classes so it matches the two
-            real Buttons beside it exactly, at no extra CSS cost. */}
-        <a
-          className={`adm-button adm-button-primary adm-button-fill-outline ${styles.guidesLink}`}
-          href={language === 'cn' ? '/zh/guide' : '/guide'}
-        >
-          {t("guides")}
-        </a>
-        <Button onClick={handleShare} color='primary' fill='outline'>{t("share")}</Button>
-        <Button onClick={handleExportCanvasAsImage} color='primary' fill='outline'>{t("export_canvas")}</Button>
-      </div>
-    </div>
-  );
+  // Keep the former toolbar's space above the calculator in every layout.
+  const header = <div className={styles.header} aria-hidden="true" />;
 
   return (
     <div className={`${styles.container}${isSplitShell ? ` ${styles.containerSplit}` : ''}`}>
       <Head>
-        <title>FOV Calculator - Sim Racing Field of View Calculator for Single & Triple Monitor Setup</title>
+        <title>显示器 FOV 计算器</title>
         <meta name="description" content="Free FOV calculator for sim racing cockpits. Calculate optimal field of view for single monitor, triple monitor, curved & flat screens. Supports iRacing, Assetto Corsa, ACC, F1, and 50+ racing games." />
         <meta name="keywords" content="FOV calculator, field of view calculator, sim racing FOV, triple monitor FOV, curved monitor FOV, iRacing FOV, Assetto Corsa FOV, ACC FOV, racing simulator FOV, cockpit FOV, display FOV" />
         <meta name="author" content="nicholasxuu" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <link rel="icon" href="/favicon.ico" />
+        <link rel="icon" href="./favicon.ico" />
         <link rel="canonical" href="https://fovcalc.xusf.xyz/" />
 
         {/* Open Graph / Facebook */}
@@ -1547,7 +1465,7 @@ const Home: NextPage = () => {
         <meta property="og:description" content="Free FOV calculator for sim racing cockpits. Calculate optimal field of view for single monitor, triple monitor, curved & flat screens. Supports 50+ racing games." />
         <meta property="og:image" content="https://fovcalc.xusf.xyz/assets/images/brz_top.jpg" />
         <meta property="og:image:alt" content="Sim racing cockpit FOV calculator showing top and side view of a car with monitor placement visualization" />
-        <meta property="og:locale" content={language === 'cn' ? 'zh_CN' : language === 'ja' ? 'ja_JP' : language === 'de' ? 'de_DE' : language === 'es' ? 'es_ES' : language === 'fr' ? 'fr_FR' : language === 'it' ? 'it_IT' : 'en_US'} />
+        <meta property="og:locale" content="zh_CN" />
 
         {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
@@ -1559,18 +1477,8 @@ const Home: NextPage = () => {
         {/* Additional SEO tags */}
         <meta name="robots" content="index, follow" />
         <meta name="googlebot" content="index, follow" />
-        <meta name="language" content={language === 'cn' ? 'Chinese' : language === 'ja' ? 'Japanese' : language === 'de' ? 'German' : language === 'es' ? 'Spanish' : language === 'fr' ? 'French' : language === 'it' ? 'Italian' : 'English'} />
-        <meta httpEquiv="Content-Language" content={language === 'cn' ? 'zh-CN' : language === 'ja' ? 'ja' : language === 'de' ? 'de' : language === 'es' ? 'es' : language === 'fr' ? 'fr' : language === 'it' ? 'it' : 'en'} />
-
-        {/* Hreflang alternate links */}
-        <link rel="alternate" hrefLang="x-default" href="https://fovcalc.xusf.xyz/" />
-        <link rel="alternate" hrefLang="en" href="https://fovcalc.xusf.xyz/?lang=en" />
-        <link rel="alternate" hrefLang="zh-CN" href="https://fovcalc.xusf.xyz/?lang=cn" />
-        <link rel="alternate" hrefLang="it" href="https://fovcalc.xusf.xyz/?lang=it" />
-        <link rel="alternate" hrefLang="de" href="https://fovcalc.xusf.xyz/?lang=de" />
-        <link rel="alternate" hrefLang="es" href="https://fovcalc.xusf.xyz/?lang=es" />
-        <link rel="alternate" hrefLang="fr" href="https://fovcalc.xusf.xyz/?lang=fr" />
-        <link rel="alternate" hrefLang="ja" href="https://fovcalc.xusf.xyz/?lang=ja" />
+        <meta name="language" content="Chinese" />
+        <meta httpEquiv="Content-Language" content="zh-CN" />
 
         {/* JSON-LD Structured Data */}
         <script
@@ -1603,9 +1511,7 @@ const Home: NextPage = () => {
                 "50+ Racing Games Support",
                 "Visual FOV Preview",
                 "Multiple Aspect Ratios",
-                "Custom Screen Configurations",
-                "Export Results as Image",
-                "Multi-language Support (English, Chinese, Italian, German, Spanish, French, Japanese)"
+                "Custom Screen Configurations"
               ],
               "keywords": "FOV calculator, field of view, sim racing, triple monitor, curved monitor, iRacing, Assetto Corsa, ACC, racing simulator"
             })

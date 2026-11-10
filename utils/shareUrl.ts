@@ -7,7 +7,6 @@ export type ShareConfig = {
   isTripleMonitor?: boolean;
   tripleMonitorAngle?: number;
   gt7Mode?: boolean;
-  language?: string;
   resolutionW?: number;
   resolutionH?: number;
   minPpdMode?: boolean;
@@ -25,7 +24,6 @@ const SHARE_DEFAULTS: Required<ShareConfig> = {
   isTripleMonitor: true,
   tripleMonitorAngle: 60,
   gt7Mode: false,
-  language: 'en',
   resolutionW: 1920,
   resolutionH: 1080,
   minPpdMode: false,
@@ -71,9 +69,6 @@ export const encodeShareParams = (config: Required<ShareConfig>): string => {
   }
   if (config.gt7Mode !== SHARE_DEFAULTS.gt7Mode) {
     params.set('g', config.gt7Mode ? '1' : '0');
-  }
-  if (config.language !== SHARE_DEFAULTS.language) {
-    params.set('l', config.language);
   }
   if (
     config.resolutionW !== SHARE_DEFAULTS.resolutionW ||
@@ -123,9 +118,6 @@ export const parseShareUrl = (raw: string): ShareConfig => {
 
   const g = flag(params.get('g'));
   if (g !== undefined) out.gt7Mode = g;
-
-  const l = params.get('l');
-  if (l) out.language = l;
 
   const r = params.get('r');
   if (r) {

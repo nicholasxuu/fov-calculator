@@ -4,10 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "node scripts/generate-sitemap.mjs && next build && node scripts/ensure-dir-index.mjs",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "sitemap": "node scripts/generate-sitemap.mjs"
+    "test:export": "node --test scripts/check-export.mjs",
+    "package:html": "pnpm run build && pnpm run test:export && node scripts/package-html.mjs"
   },
   "dependencies": {
     "@next/third-parties": "^14.2.28",
